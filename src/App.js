@@ -2,6 +2,8 @@
 
 import FileInput from "./FileInput.react";
 
+import { readMapDifficultyFromFile } from "./MapDifficulty";
+
 import React from "react";
 import { useCallback } from "react";
 
@@ -15,9 +17,14 @@ function Header(): React$MixedElement {
   return <h1>UNREMARKABLE PATTERN ASSISTANT</h1>;
 }
 
+async function processFile(file: File) {
+  const difficultyMap = await readMapDifficultyFromFile(file);
+  console.info('<><><> difficultyMap', difficultyMap);
+}
+
 function App(): React$MixedElement {
-  const onFilesChange = useCallback(file => {
-    console.info('<><><> selected file is', file);
+  const onFilesChange = useCallback((file) => {
+    processFile(file);
   }, []);
 
   return (
