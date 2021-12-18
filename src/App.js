@@ -4,7 +4,6 @@ import FileInput from "./FileInput.react";
 
 import GeneralInfo from "./GeneralInfo.react";
 import { readFromZipArchive } from "./MapArchive";
-import { readMapDifficultyFromFile } from "./MapDifficulty";
 
 import React from "react";
 import { useCallback, useState } from "react";

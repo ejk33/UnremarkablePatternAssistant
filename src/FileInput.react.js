@@ -27,11 +27,11 @@ export default function FileInput({onFilesChange}: Props): React$MixedElement {
   });
   
   useEffect(() => {
-      if (acceptedFiles.length == 0) {
+      if (acceptedFiles.length === 0) {
           return;
       }
       onFilesChange(acceptedFiles[0]);
-  }, [acceptedFiles]);
+  }, [acceptedFiles, onFilesChange]);
 
   return (
       <div style={styles.dropzone} {...getRootProps({})}>

@@ -32,8 +32,9 @@ function parseDifficulty(rawDifficulty: any): Difficulty {
             return 7;
         case 9:
             return 9;
+        default:
+            throw new Error('Unrecognized difficulty value');
     }
-    throw new Error('Unrecognized difficulty value');
 }
 
 function parseNoteDirection(rawNoteDirection: any): NoteDirection {
@@ -56,8 +57,9 @@ function parseNoteDirection(rawNoteDirection: any): NoteDirection {
             return 'SE';
         case 8:
             return 'DOT';
+        default:
+            throw new Error('Unrecognized note direction');
     }
-    throw new Error('Unrecognized note direction');
 }
 
 function parseNoteType(rawNoteType: any): NoteType {
@@ -70,8 +72,9 @@ function parseNoteType(rawNoteType: any): NoteType {
             throw new Error('Note type 2 is unused');
         case 3:
             return 'bomb';
+        default:
+            throw new Error('Unrecognized note type');
     }
-    throw new Error('Unrecognized note type');
 }
 
 function parseNoteColumn(lineIndex: any): NoteColumn {
@@ -84,8 +87,9 @@ function parseNoteColumn(lineIndex: any): NoteColumn {
             return 2;
         case 3:
             return 3;
+        default:
+            throw new Error('Unrecognized line index');
     }
-    throw new Error('Unrecognized line index');
 }
 
 function parseNoteRow(lineLayer: any): NoteRow {
@@ -96,8 +100,9 @@ function parseNoteRow(lineLayer: any): NoteRow {
             return 1;
         case 2:
             return 2;
+        default:
+            throw new Error('Unrecognized line layer');    
     }
-    throw new Error('Unrecognized line layer');
 }
 
 function parseNote(rawNote: any): Note {

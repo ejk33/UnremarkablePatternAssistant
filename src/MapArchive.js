@@ -1,6 +1,6 @@
 // @flow
 
-import type { Difficulty, MapDifficulty } from "./MapDifficulty";
+import type { MapDifficulty } from "./MapDifficulty";
 
 import { readMapDifficultyFromDifficultyBeatmapInfo } from "./MapDifficulty";
 
