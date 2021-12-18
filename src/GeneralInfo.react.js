@@ -1,6 +1,8 @@
 // @flow
 
 import type { BeatMap } from "./MapArchive";
+import type { MapDifficulty } from "./MapDifficulty";
+
 import React from 'react';
 
 const styles = {
@@ -8,16 +10,21 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
     },
+    hbox: {
+        display: 'flex',
+        flexDirection: 'row',
+    },
     text: {
         padding: '16px'
-    }
+    },
 }
 
 type Props = {
-    beatMap: BeatMap | null
+    beatMap: BeatMap | null,
+    onAnalyzeClick: (mapDifficulty: MapDifficulty) => void,
 }
 
-export default function GeneralInfo({beatMap}: Props): React$MixedElement | null {
+export default function GeneralInfo({beatMap, onAnalyzeClick}: Props): React$MixedElement | null {
     if (beatMap == null) {
         return null;
     }
@@ -28,7 +35,10 @@ export default function GeneralInfo({beatMap}: Props): React$MixedElement | null
             <div style={styles.text}>Difficulties:</div>
             {
                 beatMap.difficulties.map(mapDifficulty => {
-                    return <div style={styles.text} key={mapDifficulty.difficulty}>Difficulty: {mapDifficulty.difficulty}. Notes: {mapDifficulty.notes.length}</div>;
+                    return <div style={styles.hbox} key={mapDifficulty.difficulty}>
+                        <div style={styles.text}>Difficulty: {mapDifficulty.difficulty}. Notes: {mapDifficulty.notes.length}</div>
+                        <button onClick={() => {onAnalyzeClick(mapDifficulty)}}>Analyze</button>
+                    </div>;
                 })
             }
         </div>

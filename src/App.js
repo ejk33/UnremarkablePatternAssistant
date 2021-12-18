@@ -30,11 +30,15 @@ function App(): React$MixedElement {
     processFile(file, setBeatMap);
   }, []);
 
+  const onAnalyzeClick = useCallback((mapDifficulty) => {
+    console.info('<><><> analyze', mapDifficulty)
+  }, []);
+
   return (
     <div style={styles.container}>
       <Header />
       <FileInput onFilesChange={onFilesChange} />
-      <GeneralInfo beatMap={beatMap} />
+      <GeneralInfo beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} />
     </div>
   );
 }

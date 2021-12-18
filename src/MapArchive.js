@@ -20,7 +20,6 @@ export async function readFromZipArchive(zipFile: File): Promise<BeatMap> {
 
     const infoRaw = await zip.file('Info.dat').async('string');
     const infoObj = JSON.parse(infoRaw);
-    console.info(infoObj);
     const name = infoObj._songName;
     const sets = infoObj._difficultyBeatmapSets;
     const result: BeatMap = {
