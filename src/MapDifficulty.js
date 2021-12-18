@@ -20,6 +20,22 @@ export type MapDifficulty = {
     originalRawObject: any
 }
 
+function parseDifficulty(rawDifficulty: any): Difficulty {
+    switch (rawDifficulty) {
+        case 1:
+            return 1;
+        case 3:
+            return 3;
+        case 5:
+            return 5;
+        case 7:
+            return 7;
+        case 9:
+            return 9;
+    }
+    throw new Error('Unrecognized difficulty value');
+}
+
 function parseNoteDirection(rawNoteDirection: any): NoteDirection {
     switch (rawNoteDirection) {
         case 0:
@@ -41,7 +57,7 @@ function parseNoteDirection(rawNoteDirection: any): NoteDirection {
         case 8:
             return 'DOT';
     }
-    throw new Error('Unrecognized note direction ' + rawNoteDirection);
+    throw new Error('Unrecognized note direction');
 }
 
 function parseNoteType(rawNoteType: any): NoteType {
@@ -55,7 +71,7 @@ function parseNoteType(rawNoteType: any): NoteType {
         case 3:
             return 'bomb';
     }
-    throw new Error('Unrecognized note type ' + rawNoteType);
+    throw new Error('Unrecognized note type');
 }
 
 function parseNoteColumn(lineIndex: any): NoteColumn {
@@ -69,7 +85,7 @@ function parseNoteColumn(lineIndex: any): NoteColumn {
         case 3:
             return 3;
     }
-    throw new Error('Unrecognized line index ' + lineIndex);
+    throw new Error('Unrecognized line index');
 }
 
 function parseNoteRow(lineLayer: any): NoteRow {
@@ -81,7 +97,7 @@ function parseNoteRow(lineLayer: any): NoteRow {
         case 2:
             return 2;
     }
-    throw new Error('Unrecognized line layer ' + lineLayer);
+    throw new Error('Unrecognized line layer');
 }
 
 function parseNote(rawNote: any): Note {
@@ -109,6 +125,18 @@ export async function readMapDifficultyFromFile(file: File): Promise<MapDifficul
     const rawObject = JSON.parse(text);
     return {
         difficulty: 9, // TODO
+        notes: rawObject._notes.map(rawNote => parseNote(rawNote)),
+        originalRawObject: rawObject
+    }
+}
+
+export async function readMapDifficultyFromDifficultyBeatmapInfo(info: any, zip: any): Promise<MapDifficulty> {
+    const difficulty = parseDifficulty(info._difficultyRank);
+    const fileName = info._beatmapFilename;
+    const beatMapFileStr = await zip.file(fileName).async('string');
+    const rawObject = JSON.parse(beatMapFileStr);
+    return {
+        difficulty,
         notes: rawObject._notes.map(rawNote => parseNote(rawNote)),
         originalRawObject: rawObject
     }

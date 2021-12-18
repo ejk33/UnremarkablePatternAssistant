@@ -22,7 +22,8 @@ type Props = {
 
 export default function FileInput({onFilesChange}: Props): React$MixedElement {
   const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
-      multiple: false
+      multiple: false,
+      accept: 'application/zip'
   });
   
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function FileInput({onFilesChange}: Props): React$MixedElement {
   return (
       <div style={styles.dropzone} {...getRootProps({})}>
         <input {...getInputProps()} />
-        <p>Drop or choose a difficulty.dat file, such as ExpertPlusStandard.dat</p>
+        <p>Drop or choose a Beat Saber map .zip file</p>
       </div>
   );
 }
