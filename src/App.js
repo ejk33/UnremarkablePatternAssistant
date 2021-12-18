@@ -1,5 +1,6 @@
 // @flow
 
+import { analyzeMapPatterns } from "./Analyzer";
 import FileInput from "./FileInput.react";
 
 import GeneralInfo from "./GeneralInfo.react";
@@ -32,6 +33,8 @@ function App(): React$MixedElement {
 
   const onAnalyzeClick = useCallback((mapDifficulty) => {
     console.info('<><><> analyze', mapDifficulty)
+    const groups = analyzeMapPatterns(mapDifficulty);
+    console.info(groups);
   }, []);
 
   return (
