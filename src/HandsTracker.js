@@ -4,6 +4,7 @@ import type { NotePattern } from "./Analyzer";
 import type { Note, NoteColumn, NoteDirection, NoteRow } from "./MapDifficulty";
 
 import { directionsMinimumAbsDifference } from "./MapDifficulty";
+import { isParityRespected } from "./Parity";
 
 export type SingleHandState = {
     column: NoteColumn,
@@ -15,7 +16,6 @@ export type HandState = {
     left: ?SingleHandState,
     right: ?SingleHandState
 }
-
 
 type DirectionChecker = (before: NoteDirection, after: NoteDirection) => boolean;
 
@@ -172,6 +172,11 @@ export class HandsTracker {
         // and not cause a tangle
         const fluid = tracker.canNoteFollowFluidly(hand, note);
         if (!fluid) {
+            return false;
+        }
+        // Check parity
+        const parityRespected = isParityRespected(tracker.state, note);
+        if (!parityRespected) {
             return false;
         }
         // Apply and check tangle
