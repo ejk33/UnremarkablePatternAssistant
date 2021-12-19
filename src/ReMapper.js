@@ -49,17 +49,16 @@ export function ReMap(mapDifficulty: MapDifficulty, patternsDb: PatternDatabase)
 
     const newNotes: Array<Note> = [];
     const mappingTimes = extractMappingTimes(mapDifficulty);
+    console.info('Remap locations:', mappingTimes);
 
     let mappingTimesIndex = -1;
     let lastSourceTime = -1;
     let currentPattern: ?NotePattern = null;
 
     while (true) {
-        if (currentPattern == null) {
-            currentPattern = pickEligiblePattern(handsTracker, patternsDb);
-            lastSourceTime = -1;
-            console.info(`Remapping... At time index ${mappingTimesIndex}, Picked pattern `, currentPattern);
-        }
+        currentPattern = pickEligiblePattern(handsTracker, patternsDb);
+        lastSourceTime = -1;
+        console.info(`Remapping... At time index ${mappingTimesIndex}, Picked pattern `, currentPattern);
 
         for (let note of currentPattern.notes) {
             // Check termination
