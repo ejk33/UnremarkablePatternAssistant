@@ -36,6 +36,8 @@ function pickEligiblePattern(handsTracker: HandsTracker, patternsDb: PatternData
         throw new Error('No patterns can be applied');
     }
 
+    console.info('Found eligible patterns', handsTracker.state.left?.direction, handsTracker.state.right?.direction, eligiblePatterns.length);
+
     const randIndex = chance.integer({
         min: 0,
         max: eligiblePatterns.length - 1

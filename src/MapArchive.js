@@ -48,7 +48,10 @@ export async function updateAndDownloadZip(beatMap: BeatMap): Promise<void> {
             for (let map of maps) {
                 // map is the filename of the difficulty map
                 const mapDifficulty = await readMapDifficultyFromDifficultyBeatmapInfo(map, zip);
-                // TODO
+                const difficulty = mapDifficulty.difficulty;
+                const sourceNewData = beatMap.difficulties.filter(d => d.difficulty === difficulty)[0];
+                mapDifficulty.notes = sourceNewData.notes;
+                // TODO serialize the mapDifficulty object
             }
         }
     }
