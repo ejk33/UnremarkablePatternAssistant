@@ -2,6 +2,8 @@
 
 import type { MapDifficulty, Note } from "./MapDifficulty";
 
+import { HandsTracker } from "./HandsTracker";
+
 type NoteGroup = {
     notes: Array<Note>
 }
@@ -23,11 +25,14 @@ export function analyzeMapPatterns(mapDifficulty: MapDifficulty): NoteGroups {
         }
     }
 
+    const handTracker = new HandsTracker();
+
     for (let note of notes) {
+        handTracker.applyNote(note);
         if (note.time - lastTimestamp > 1 && currentGroup.notes.length > 0) {
             // break due to long pause
             breakGroup();
-        } else if (currentGroup.notes.length >= 16) {
+        } else if (currentGroup.notes.length >= 16 && !handTracker.areHandsHorizontal() && !handTracker.areHandsTangled()) {
             // group size limit reached
             breakGroup();
         } else {
