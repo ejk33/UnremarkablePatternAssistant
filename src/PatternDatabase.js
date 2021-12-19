@@ -26,11 +26,31 @@ export class PatternDatabase {
     }
 
     serialize(): void {
-        const allPatterns = [];
+        const allKeys: Array<string> = [];
+        const allPatterns: Array<NotePattern> = [];
         this.patterns.forEach((value, key) => {
-            allPatterns.push(value);
-        })
+            allKeys.push(key);
+        });
+        allKeys.sort();
+        for (let key of allKeys) {
+            const pattern = this.patterns.get(key);
+            if (pattern != null) {
+                allPatterns.push(pattern);
+            }
+        }
+
         const data = JSON.stringify(allPatterns, null, 2);
         downloadjs(data, 'patterns.json', 'text/plain');
+    }
+
+    async loadFromServer(onDone: () => void): Promise<void> {
+        const request = await fetch('/patterns.json', {
+            method: 'GET'
+        });
+        const response: Array<NotePattern> = await request.json();
+        for (let pattern of response) {
+            this.ingest(pattern);
+        }
+        onDone();
     }
 }

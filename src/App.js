@@ -9,7 +9,7 @@ import { readFromZipArchive } from "./MapArchive";
 import { PatternDatabase } from "./PatternDatabase";
 
 import React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const styles = {
   container: {
@@ -34,10 +34,17 @@ async function processFile(file: File, setBeatMap) {
 
 function App(): React$MixedElement {
   const [beatMap, setBeatMap] = useState(null);
+  const [lastAnalysisOutput, setLastAnalysisOutput] = useState(null);
+  const [dbLoaded, setDbLoaded] = useState(false);
   const patternDatabase = useMemo(() => {
     return new PatternDatabase();
   }, []);
-  const [lastAnalysisOutput, setLastAnalysisOutput] = useState(null);
+
+  useEffect(() => {
+    patternDatabase.loadFromServer(() => {
+      setDbLoaded(true);
+    });
+  }, [patternDatabase, setDbLoaded]);
 
   const onFilesChange = useCallback((file) => {
     processFile(file, setBeatMap);
@@ -54,6 +61,10 @@ function App(): React$MixedElement {
   const downloadPatternsDatabase = useCallback(() => {
     patternDatabase.serialize();
   }, []);
+
+  if (!dbLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div style={styles.container}>
