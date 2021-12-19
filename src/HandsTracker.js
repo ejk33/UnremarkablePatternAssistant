@@ -17,8 +17,6 @@ export type HandState = {
     right: ?SingleHandState
 }
 
-type DirectionChecker = (before: NoteDirection, after: NoteDirection) => boolean;
-
 export class HandsTracker {
     state: HandState;
 
@@ -123,13 +121,6 @@ export class HandsTracker {
         }
     }
 
-    clone(): HandsTracker {
-        const newTracker = new HandsTracker();
-        newTracker.state = JSON.parse(JSON.stringify(this.state));
-        return newTracker;
-    }
-
-
     canNoteFollowFluidly(hand: SingleHandState, note: Note): boolean {
         const before = hand.direction;
         const after = note.direction;
@@ -138,7 +129,7 @@ export class HandsTracker {
     }
 
     canNoteBeApplied(note: Note): boolean {
-        const tracker = this.clone();
+        const tracker = cloneHandsTracker(this);
         let hand = null;
         let otherHand = null;
         if (note.type === 'red') {
@@ -189,7 +180,7 @@ export class HandsTracker {
         // A full tracker is required because in a pattern, one hand's inputs
         // may occur much later than the other.
         // We need to have full hand tracking to know if there will be any clashes
-        const tmpTracker = this.clone();
+        const tmpTracker = cloneHandsTracker(this);
 
         let leftChained = false;
         let rightChained = false;
@@ -226,4 +217,10 @@ export class HandsTracker {
 
         return true;
     }
+}
+
+export function cloneHandsTracker(tracker: HandsTracker): HandsTracker {
+    const newTracker = new HandsTracker();
+    newTracker.state = JSON.parse(JSON.stringify(tracker.state));
+    return newTracker;
 }

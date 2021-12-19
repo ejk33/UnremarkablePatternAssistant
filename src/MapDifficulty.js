@@ -38,12 +38,17 @@ function directionToDirectionIndex(direction: NoteDirection): number {
             return 6;
         case 'NW':
             return 7;
+        case 'DOT':
+            return -1;
         default:
             throw new Error('Invalid direction value');
     }
 }
 
 export function directionsMinimumAbsDifference(a: NoteDirection, b: NoteDirection): number {
+    if (a === 'DOT' || b === 'DOT') {
+        return 0;
+    }
     const ai = directionToDirectionIndex(a);
     const bi = directionToDirectionIndex(b);
     const x = ai < bi ? ai : bi;

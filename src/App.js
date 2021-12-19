@@ -8,6 +8,8 @@ import { readFromZipArchive } from "./MapArchive";
 
 import { PatternDatabase } from "./PatternDatabase";
 
+import { ReMap } from "./ReMapper";
+
 import React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -58,9 +60,14 @@ function App(): React$MixedElement {
     setLastAnalysisOutput(groups.length);
   }, [patternDatabase, setLastAnalysisOutput]);
 
+  const onReMapClick = useCallback((mapDifficulty) => {
+    ReMap(mapDifficulty, patternDatabase);
+    console.info('ReMap completed');
+  }, [patternDatabase]);
+
   const downloadPatternsDatabase = useCallback(() => {
     patternDatabase.serialize();
-  }, []);
+  }, [patternDatabase]);
 
   if (!dbLoaded) {
     return <div>Loading...</div>;
@@ -74,7 +81,7 @@ function App(): React$MixedElement {
         lastAnalysisOutput != null && <div style={styles.text}>Imported {lastAnalysisOutput} patterns.</div>
       }
       <button style={styles.button} onClick={downloadPatternsDatabase}>Download patterns database. {patternDatabase.size()} patterns</button>
-      <GeneralInfo beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} />
+      <GeneralInfo beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} onReMapClick={onReMapClick} />
     </div>
   );
 }

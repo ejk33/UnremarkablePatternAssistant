@@ -22,9 +22,10 @@ const styles = {
 type Props = {
     beatMap: BeatMap | null,
     onAnalyzeClick: (mapDifficulty: MapDifficulty) => void,
+    onReMapClick: (mapDifficulty: MapDifficulty) => void,
 }
 
-export default function GeneralInfo({beatMap, onAnalyzeClick}: Props): React$MixedElement | null {
+export default function GeneralInfo({beatMap, onAnalyzeClick, onReMapClick}: Props): React$MixedElement | null {
     if (beatMap == null) {
         return null;
     }
@@ -38,6 +39,7 @@ export default function GeneralInfo({beatMap, onAnalyzeClick}: Props): React$Mix
                     return <div style={styles.hbox} key={mapDifficulty.difficulty}>
                         <div style={styles.text}>Difficulty: {mapDifficulty.difficulty}. Notes: {mapDifficulty.notes.length}</div>
                         <button onClick={() => {onAnalyzeClick(mapDifficulty)}}>Analyze</button>
+                        <button onClick={() => {onReMapClick(mapDifficulty)}}>ReMap</button>
                     </div>;
                 })
             }
