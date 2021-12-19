@@ -20,7 +20,7 @@ const styles = {
 }
 
 type Props = {
-    beatMap: BeatMap | null,
+    beatMap: ?BeatMap,
     onAnalyzeClick: (mapDifficulty: MapDifficulty) => void,
     onReMapClick: (mapDifficulty: MapDifficulty) => void,
 }

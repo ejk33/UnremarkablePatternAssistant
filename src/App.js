@@ -1,5 +1,7 @@
 // @flow
 
+import type { BeatMap } from "./MapArchive";
+
 import { analyzeMapPatterns } from "./Analyzer";
 import FileInput from "./FileInput.react";
 
@@ -35,7 +37,7 @@ async function processFile(file: File, setBeatMap) {
 }
 
 function App(): React$MixedElement {
-  const [beatMap, setBeatMap] = useState(null);
+  const [beatMap, setBeatMap] = useState<?BeatMap>(null);
   const [lastAnalysisOutput, setLastAnalysisOutput] = useState(null);
   const [dbLoaded, setDbLoaded] = useState(false);
   const patternDatabase = useMemo(() => {
@@ -63,7 +65,12 @@ function App(): React$MixedElement {
   const onReMapClick = useCallback((mapDifficulty) => {
     ReMap(mapDifficulty, patternDatabase);
     console.info('ReMap completed');
-  }, [patternDatabase]);
+    setBeatMap(beatMap => {
+      return beatMap == null ? null : {
+        ...beatMap
+      }
+    })
+  }, [patternDatabase, setBeatMap]);
 
   const downloadPatternsDatabase = useCallback(() => {
     patternDatabase.serialize();

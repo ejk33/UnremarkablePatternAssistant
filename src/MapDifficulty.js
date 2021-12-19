@@ -1,5 +1,7 @@
 // @flow
 
+import type { BeatMap } from "./MapArchive";
+
 export type NoteDirection = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW' | 'DOT';
 export type NoteType = 'red' | 'blue' | 'bomb';
 export type NoteColumn = 0 | 1 | 2 | 3; // left to right

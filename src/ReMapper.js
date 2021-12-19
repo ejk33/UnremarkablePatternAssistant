@@ -7,6 +7,8 @@ import type { PatternDatabase } from "./PatternDatabase";
 import { HandsTracker } from "./HandsTracker";
 import Chance from 'chance';
 
+const chance = new Chance();
+
 function extractMappingTimes(mapDifficulty: MapDifficulty): Array<number> {
     const times: Array<number> = [];
     let lastTime = -1;
@@ -33,8 +35,6 @@ function pickEligiblePattern(handsTracker: HandsTracker, patternsDb: PatternData
     if (eligiblePatterns.length === 0) {
         throw new Error('No patterns can be applied');
     }
-
-    const chance = new Chance();
 
     const randIndex = chance.integer({
         min: 0,
@@ -74,6 +74,7 @@ export function ReMap(mapDifficulty: MapDifficulty, patternsDb: PatternDatabase)
             if (!isNoteOnSameTickAsPrevious) {
                 mappingTimesIndex += 1;
             }
+            lastSourceTime = note.time;
 
             // Check termination
             if (mappingTimesIndex >= mappingTimes.length) {
