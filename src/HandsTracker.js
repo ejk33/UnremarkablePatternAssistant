@@ -3,6 +3,8 @@
 import type { NotePattern } from "./Analyzer";
 import type { Note, NoteColumn, NoteDirection, NoteRow } from "./MapDifficulty";
 
+import { directionsMinimumAbsDifference } from "./MapDifficulty";
+
 export type SingleHandState = {
     column: NoteColumn,
     row: NoteRow,
@@ -13,6 +15,9 @@ export type HandState = {
     left: ?SingleHandState,
     right: ?SingleHandState
 }
+
+
+type DirectionChecker = (before: NoteDirection, after: NoteDirection) => boolean;
 
 export class HandsTracker {
     state: HandState;
@@ -69,6 +74,21 @@ export class HandsTracker {
         }
     }
 
+    getHandVerticalDirection(hand: SingleHandState): 'up' | 'down' | 'none' {
+        switch (hand.direction) {
+            case 'N':
+            case 'NW':
+            case 'NE':
+                return 'up';
+            case 'S':
+            case 'SW':
+            case 'SE':
+                return 'down';
+            default:
+                return 'none';
+        }
+    }
+
     // Hands are in a horizontal position, swinging the same direction
     areHandsHorizontal(): boolean {
         const {left, right} = this.state;
@@ -109,26 +129,54 @@ export class HandsTracker {
         return newTracker;
     }
 
+
+    canNoteFollowFluidly(hand: SingleHandState, note: Note): boolean {
+        const before = hand.direction;
+        const after = note.direction;
+        const absDiff = directionsMinimumAbsDifference(before, after);
+        return absDiff <= 1; // Max 45deg of change
+    }
+
     canNoteBeApplied(note: Note): boolean {
+        const tracker = this.clone();
+        let hand = null;
+        let otherHand = null;
+        if (note.type === 'red') {
+            hand = tracker.state.left;
+            otherHand = tracker.state.right;
+        }
+        if (note.type === 'blue') {
+            hand = tracker.state.right;
+            otherHand = tracker.state.left;
+        }
+
         // No hands initialized, note is always allowed
-        if (this.state.left == null && this.state.right == null) {
+        if (hand == null && otherHand == null) {
             return true;
         }
 
-        let hand = null;
-        if (note.type === 'red') {
-            hand = this.state.left;
-        }
-        if (note.type === 'blue') {
-            hand = this.state.right;
+        // The other hand is not initialized.
+        // Do a simple check
+        if (otherHand == null && hand != null) {
+            return tracker.canNoteFollowFluidly(hand, note);
         }
 
-        // The hand was not initialized yet
+        // The hand was not initialized yet. Require it not to tangle
+        // With the other after applying this note
         if (hand == null) {
-
+            tracker.applyNote(note);
+            return !tracker.areHandsTangled() && !tracker.areHandsHorizontal();
         }
 
-        return true; // TODO
+        // Both hands are initialized. The note must follow smoothly
+        // and not cause a tangle
+        const fluid = tracker.canNoteFollowFluidly(hand, note);
+        if (!fluid) {
+            return false;
+        }
+        // Apply and check tangle
+        tracker.applyNote(note);
+        return !tracker.areHandsHorizontal() && !tracker.areHandsTangled();
     }
 
     canPatternBeAppliedNext(pattern: NotePattern): boolean {

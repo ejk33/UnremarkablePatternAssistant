@@ -20,6 +20,37 @@ export type MapDifficulty = {
     originalRawObject: any
 }
 
+function directionToDirectionIndex(direction: NoteDirection): number {
+    switch (direction) {
+        case 'N':
+            return 0;
+        case 'NE':
+            return 1;
+        case 'E':
+            return 2;
+        case 'SE':
+            return 3;
+        case 'S':
+            return 4;
+        case 'SW':
+            return 5;
+        case 'W':
+            return 6;
+        case 'NW':
+            return 7;
+        default:
+            throw new Error('Invalid direction value');
+    }
+}
+
+export function directionsMinimumAbsDifference(a: NoteDirection, b: NoteDirection): number {
+    const ai = directionToDirectionIndex(a);
+    const bi = directionToDirectionIndex(b);
+    const x = ai < bi ? ai : bi;
+    const y = ai < bi ? bi : ai;
+    return Math.abs(Math.min((y - x), (x+8 - y)));
+}
+
 function parseDifficulty(rawDifficulty: any): Difficulty {
     switch (rawDifficulty) {
         case 1:
