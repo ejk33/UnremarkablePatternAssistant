@@ -1,5 +1,6 @@
 // @flow
 
+import type { NotePattern } from "./Analyzer";
 import type { Note, NoteColumn, NoteDirection, NoteRow } from "./MapDifficulty";
 
 export type SingleHandState = {
@@ -100,5 +101,43 @@ export class HandsTracker {
                 direction: note.direction
             };
         }
+    }
+
+    clone(): HandsTracker {
+        const newTracker = new HandsTracker();
+        newTracker.state = JSON.parse(JSON.stringify(this.state));
+        return newTracker;
+    }
+
+    canNoteBeApplied(note: Note): boolean {
+        // No hands initialized, note is always allowed
+        if (this.state.left == null && this.state.right == null) {
+            return true;
+        }
+
+        let hand = null;
+        if (note.type === 'red') {
+            hand = this.state.left;
+        }
+        if (note.type === 'blue') {
+            hand = this.state.right;
+        }
+
+        // The hand was not initialized yet
+        if (hand == null) {
+
+        }
+
+        return true; // TODO
+    }
+
+    canPatternBeAppliedNext(pattern: NotePattern): boolean {
+        // Clone the tracker
+        // A full tracker is required because in a pattern, one hand's inputs
+        // may occur much later than the other.
+        // We need to have full hand tracking to know if there will be any clashes
+        const tmpTracker = this.clone();
+
+        return true; // TODO
     }
 }

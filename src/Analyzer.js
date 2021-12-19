@@ -4,16 +4,16 @@ import type { MapDifficulty, Note } from "./MapDifficulty";
 
 import { HandsTracker } from "./HandsTracker";
 
-type NoteGroup = {
+export type NotePattern = {
     notes: Array<Note>
 }
 
-type NoteGroups = Array<NoteGroup>;
+type NoteGroups = Array<NotePattern>;
 
 export function analyzeMapPatterns(mapDifficulty: MapDifficulty): NoteGroups {
     const notes = mapDifficulty.notes;
     const groups: NoteGroups = [];
-    let currentGroup: NoteGroup = {
+    let currentGroup: NotePattern = {
         notes: []
     };
     let lastTimestamp = 0;
