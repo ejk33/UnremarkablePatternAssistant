@@ -208,11 +208,17 @@ export class HandsTracker {
             if (!rightChained && note.type === 'blue') {
                 if (!canBeApplied) {
                     // Right chaining failed
-                    // TODO
+                    return false;
+                } else {
+                    // Right chained!
+                    rightChained = true;
                 }
             }
+
+            // Apply
+            tmpTracker.applyNote(note);
         }
 
-        return true; // TODO
+        return true;
     }
 }
