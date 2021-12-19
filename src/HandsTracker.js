@@ -186,6 +186,33 @@ export class HandsTracker {
         // We need to have full hand tracking to know if there will be any clashes
         const tmpTracker = this.clone();
 
+        let leftChained = false;
+        let rightChained = false;
+
+        // Once both have been chained, or the pattern has reached the end, we terminate the loop
+        for (let note of pattern.notes) {
+            if (leftChained && rightChained) {
+                return true;
+            }
+
+            const canBeApplied = tmpTracker.canNoteBeApplied(note);
+            if (!leftChained && note.type === 'red') {
+                if (!canBeApplied) {
+                    // Left chaining failed
+                    return false;
+                } else {
+                    // Left chained!
+                    leftChained = true;
+                }
+            }
+            if (!rightChained && note.type === 'blue') {
+                if (!canBeApplied) {
+                    // Right chaining failed
+                    // TODO
+                }
+            }
+        }
+
         return true; // TODO
     }
 }
