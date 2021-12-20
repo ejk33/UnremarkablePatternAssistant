@@ -2,14 +2,19 @@
 
 import type { MapDifficulty } from "./MapDifficulty";
 
-import { readMapDifficultyFromDifficultyBeatmapInfo } from "./MapDifficulty";
+import {
+  readMapDifficultyFromDifficultyBeatmapInfo,
+  serializeMapDifficultyToObj,
+} from "./MapDifficulty";
 
 import JSZip from 'jszip';
+import downloadjs from 'downloadjs';
 
 export type BeatMap = {
     name: string,
     difficulties: Array<MapDifficulty>,
-    archive: any
+    archive: any,
+    originalFileName: string
 }
 
 export async function readFromZipArchive(zipFile: File): Promise<BeatMap> {
@@ -22,7 +27,8 @@ export async function readFromZipArchive(zipFile: File): Promise<BeatMap> {
     const result: BeatMap = {
         name,
         difficulties: [],
-        archive: zip
+        archive: zip,
+        originalFileName: zipFile.name
     };
     for (let set of sets) {
         if (set._beatmapCharacteristicName === 'Standard') {
@@ -52,7 +58,15 @@ export async function updateAndDownloadZip(beatMap: BeatMap): Promise<void> {
                 const sourceNewData = beatMap.difficulties.filter(d => d.difficulty === difficulty)[0];
                 mapDifficulty.notes = sourceNewData.notes;
                 // TODO serialize the mapDifficulty object
+                const serializedObj = serializeMapDifficultyToObj(mapDifficulty);
+                zip.remove(map);
+                zip.file(map, JSON.stringify(serializedObj));
+                console.info('Updated map difficulty', map);
             }
         }
     }
+
+    const originalName = beatMap.originalFileName;
+    const blob = await zip.generateAsync({type:"blob"});
+    downloadjs(blob, originalName, 'application/zip');
 }

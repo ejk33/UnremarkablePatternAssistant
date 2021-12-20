@@ -17,7 +17,7 @@ export type Note = {
 export type MapDifficulty = {
     difficulty: Difficulty,
     notes: Array<Note>,
-    originalRawObject: any
+    originalRawObject: any,
 }
 
 export function reverseDirection(direction: NoteDirection): NoteDirection {
@@ -121,6 +121,31 @@ function parseNoteDirection(rawNoteDirection: any): NoteDirection {
     }
 }
 
+function serializeNoteDirection(noteDirection: NoteDirection): number {
+    switch (noteDirection) {
+        case 'N':
+            return 0;
+        case 'S':
+            return 1;
+        case 'W':
+            return 2;
+        case 'E':
+            return 3;
+        case 'NW':
+            return 4;
+        case 'NE':
+            return 5;
+        case 'SW':
+            return 6;
+        case 'SE':
+            return 7;
+        case 'DOT':
+            return 8;
+        default:
+            throw new Error('Unrecognized note direction');
+    }
+}
+
 function parseNoteType(rawNoteType: any): NoteType {
     switch (rawNoteType) {
         case 0:
@@ -131,6 +156,19 @@ function parseNoteType(rawNoteType: any): NoteType {
             throw new Error('Note type 2 is unused');
         case 3:
             return 'bomb';
+        default:
+            throw new Error('Unrecognized note type');
+    }
+}
+
+function serializeNoteType(noteType: NoteType): number {
+    switch (noteType) {
+        case 'red':
+            return 0;
+        case 'blue':
+            return 1;
+        case 'bomb':
+            return 3
         default:
             throw new Error('Unrecognized note type');
     }
@@ -151,6 +189,21 @@ function parseNoteColumn(lineIndex: any): NoteColumn {
     }
 }
 
+function serializeNoteColumn(noteColumn: NoteColumn): number {
+    switch (noteColumn) {
+        case 0:
+            return 0;
+        case 1:
+            return 1;
+        case 2:
+            return 2;
+        case 3:
+            return 3;
+        default:
+            throw new Error('Unrecognized Note Column');
+    }
+}
+
 function parseNoteRow(lineLayer: any): NoteRow {
     switch (lineLayer) {
         case 0:
@@ -164,6 +217,19 @@ function parseNoteRow(lineLayer: any): NoteRow {
     }
 }
 
+function serializeNoteRow(noteRow: NoteRow): number {
+    switch (noteRow) {
+        case 0:
+            return 0;
+        case 1:
+            return 1;
+        case 2:
+            return 2;
+        default:
+            throw new Error('Unrecognized note row');  
+    }
+}
+
 function parseNote(rawNote: any): Note {
     return {
         time: rawNote._time,
@@ -174,24 +240,21 @@ function parseNote(rawNote: any): Note {
     }
 }
 
-function readFileToString(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            resolve((event.target : any).result);
-        }
-        reader.readAsText(file, 'UTF-8');
-    });
+function serializeNote(note: Note): any {
+    return {
+        _time: note.time,
+        _lineIndex: serializeNoteColumn(note.column),
+        _lineLayer: serializeNoteRow(note.row),
+        _type: serializeNoteType(note.type),
+        _cutDirection: serializeNoteDirection(note.direction)
+    }
 }
 
-export async function readMapDifficultyFromFile(file: File): Promise<MapDifficulty> {
-    const text = await readFileToString(file);
-    const rawObject = JSON.parse(text);
-    return {
-        difficulty: 9, // TODO
-        notes: rawObject._notes.map(rawNote => parseNote(rawNote)),
-        originalRawObject: rawObject
-    }
+export function serializeMapDifficultyToObj(mapDifficulty: MapDifficulty): any {
+    const serializedNotes = mapDifficulty.notes.map(note => serializeNote(note));
+    const rawObj = mapDifficulty.originalRawObject;
+    rawObj._notes = serializedNotes;
+    return rawObj;
 }
 
 export async function readMapDifficultyFromDifficultyBeatmapInfo(info: any, zip: any): Promise<MapDifficulty> {

@@ -6,7 +6,7 @@ import { analyzeMapPatterns } from "./Analyzer";
 import FileInput from "./FileInput.react";
 
 import GeneralInfo from "./GeneralInfo.react";
-import { readFromZipArchive } from "./MapArchive";
+import { readFromZipArchive, updateAndDownloadZip } from "./MapArchive";
 
 import { PatternDatabase } from "./PatternDatabase";
 
@@ -77,6 +77,13 @@ function App(): React$MixedElement {
     patternDatabase.serialize();
   }, [patternDatabase]);
 
+  const downloadBeatMapZip = useCallback(() => {
+    if (beatMap == null) {
+      return;
+    }
+    updateAndDownloadZip(beatMap);
+  }, [beatMap]);
+
   if (!dbLoaded) {
     return <div>Loading...</div>;
   }
@@ -90,6 +97,7 @@ function App(): React$MixedElement {
       }
       <button style={styles.button} onClick={downloadPatternsDatabase}>Download patterns database. {patternDatabase.size()} patterns</button>
       <GeneralInfo beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} onReMapClick={onReMapClick} />
+      { beatMap != null && <button style={styles.button} onClick={downloadBeatMapZip}>Download map .zip</button>}
     </div>
   );
 }

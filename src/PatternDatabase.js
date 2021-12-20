@@ -70,7 +70,6 @@ export class PatternDatabase {
         const startMap = new Map<string, Array<NotePattern>>();
         const endMap = new Map<string, Array<NotePattern>>();
         for (let pattern of this.patterns) {
-            const hash = pattern[0];
             const p = pattern[1];
             let left = 'X';
             let right = 'X';
@@ -106,20 +105,6 @@ export class PatternDatabase {
             }
             endPatterns.push(p);
             endMap.set(endHandidness, endPatterns);
-        }
-
-        console.info('START PATTERNS');
-        for (let handidnessStat of startMap) {
-            const handidness = handidnessStat[0];
-            const patterns = handidnessStat[1];
-            console.info(handidness, patterns.length);
-        }
-
-        console.info('END PATTERNS');
-        for (let stat of endMap) {
-            const handidness = stat[0];
-            const patterns = stat[1];
-            console.info(handidness, patterns.length);
         }
 
         this.startMap = startMap;
