@@ -20,6 +20,29 @@ export type MapDifficulty = {
     originalRawObject: any
 }
 
+export function reverseDirection(direction: NoteDirection): NoteDirection {
+    switch (direction) {
+        case 'N':
+            return 'S';
+        case 'NE':
+            return 'SW';
+        case 'E':
+            return 'W';
+        case 'SE':
+            return 'NW';
+        case 'S':
+            return 'N';
+        case 'SW':
+            return 'NE';
+        case 'W':
+            return 'E';
+        case 'NW':
+            return 'SE';
+        default:
+            return 'S';
+    }
+}
+
 function directionToDirectionIndex(direction: NoteDirection): number {
     switch (direction) {
         case 'N':

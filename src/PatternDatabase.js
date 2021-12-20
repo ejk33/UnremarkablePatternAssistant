@@ -7,9 +7,32 @@ import ObjectHash from 'object-hash';
 
 export class PatternDatabase {
     patterns: Map<string, NotePattern>;
+    startMap: Map<string, Array<NotePattern>>;
+    endMap: Map<string, Array<NotePattern>>;
 
     constructor() {
         this.patterns = new Map();
+        this.startMap = new Map();
+        this.endMap = new Map();
+        this.ingest({
+            notes: [
+                {
+                    time: 1,
+                    column: 1,
+                    row: 2,
+                    type: 'red',
+                    direction: 'N'
+                },
+                {
+                    time: 1,
+                    column: 2,
+                    row: 2,
+                    type: 'blue',
+                    direction: 'N'
+                }
+            ]
+        });
+        this.recomputeHandidnessMaps();
     }
 
     computePatternHash(pattern: NotePattern): string {
@@ -98,6 +121,9 @@ export class PatternDatabase {
             const patterns = stat[1];
             console.info(handidness, patterns.length);
         }
+
+        this.startMap = startMap;
+        this.endMap = endMap;
     }
 
     async loadFromServer(onDone: () => void): Promise<void> {

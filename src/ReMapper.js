@@ -1,10 +1,12 @@
 // @flow
 
 import type { NotePattern } from "./Analyzer";
-import type { MapDifficulty, Note } from "./MapDifficulty";
+import type { MapDifficulty, Note, NoteDirection } from "./MapDifficulty";
 import type { PatternDatabase } from "./PatternDatabase";
 
 import { HandsTracker } from "./HandsTracker";
+import { reverseDirection } from "./MapDifficulty";
+
 import Chance from 'chance';
 
 const chance = new Chance();
@@ -24,16 +26,21 @@ function extractMappingTimes(mapDifficulty: MapDifficulty): Array<number> {
 }
 
 function pickEligiblePattern(handsTracker: HandsTracker, patternsDb: PatternDatabase): NotePattern {
-    const eligiblePatterns: Array<NotePattern> = [];
+    // Hands default state is Up, Up, so that the first notes to be initialized will be Down, Down
+    let currentLeft: NoteDirection = handsTracker.state.left?.direction ?? 'N';
+    let currentRight: NoteDirection = handsTracker.state.right?.direction ?? 'N';
+    let reverseLeft = reverseDirection(currentLeft);
+    let reverseRight = reverseDirection(currentRight);
+    const newStartKey = `${reverseLeft}-${reverseRight}`;
+    let eligiblePatterns = patternsDb.startMap.get(newStartKey);
 
-    patternsDb.patterns.forEach((pattern, hash) => {
-        if (handsTracker.canPatternBeAppliedNext(pattern)) {
-            eligiblePatterns.push(pattern);
+    if (eligiblePatterns == null || eligiblePatterns.length === 0) {
+        console.warn('No patterns found for', newStartKey);
+        // Hard reset, will likely require manual intervention
+        eligiblePatterns = patternsDb.startMap.get('N-N');
+        if (eligiblePatterns == null) {
+            throw new Error('Default pattern not found');
         }
-    });
-
-    if (eligiblePatterns.length === 0) {
-        throw new Error('No patterns can be applied');
     }
 
     console.info('Found eligible patterns', handsTracker.state.left?.direction, handsTracker.state.right?.direction, eligiblePatterns.length);
