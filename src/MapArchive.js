@@ -52,16 +52,17 @@ export async function updateAndDownloadZip(beatMap: BeatMap): Promise<void> {
         if (set._beatmapCharacteristicName === 'Standard') {
             const maps = set._difficultyBeatmaps;
             for (let map of maps) {
-                // map is the filename of the difficulty map
+                const mapFileName = map._beatmapFilename;
                 const mapDifficulty = await readMapDifficultyFromDifficultyBeatmapInfo(map, zip);
                 const difficulty = mapDifficulty.difficulty;
                 const sourceNewData = beatMap.difficulties.filter(d => d.difficulty === difficulty)[0];
                 mapDifficulty.notes = sourceNewData.notes;
-                // TODO serialize the mapDifficulty object
+                console.info('Notes', mapDifficulty.notes.length);
                 const serializedObj = serializeMapDifficultyToObj(mapDifficulty);
-                zip.remove(map);
-                zip.file(map, JSON.stringify(serializedObj));
-                console.info('Updated map difficulty', map);
+                zip.remove(mapFileName);
+                console.info('Removed', mapFileName);
+                zip.file(mapFileName, JSON.stringify(serializedObj));
+                console.info('Updated map difficulty', mapFileName);
             }
         }
     }
