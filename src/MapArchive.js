@@ -17,8 +17,22 @@ export type BeatMap = {
     originalFileName: string
 }
 
+function readFileToBlob(file: File): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resolve((event.target : any).result);
+        }
+        reader.readAsArrayBuffer(file);
+    });
+}
+
 export async function readFromZipArchive(zipFile: File): Promise<BeatMap> {
-    const zip = await JSZip.loadAsync(zipFile);
+    console.info('<><><> reading blob');
+    const blob = await readFileToBlob(zipFile);
+    console.info('<><><> blob obtained', blob);
+    const zip = await JSZip.loadAsync(blob);
+    console.info('<><><> zip made');
 
     const infoRaw = await zip.file('Info.dat').async('string');
     const infoObj = JSON.parse(infoRaw);

@@ -32,6 +32,7 @@ function Header(): React$MixedElement {
 }
 
 async function processFile(file: File, setBeatMap) {
+  console.info('<><><> process input file');
   const beatMap = await readFromZipArchive(file);
   setBeatMap(beatMap);
 }

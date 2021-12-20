@@ -1,7 +1,7 @@
 // @flow
 
 import React from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import {useDropzone} from 'react-dropzone';
 
@@ -21,22 +21,14 @@ type Props = {
 };
 
 export default function FileInput({onFilesChange}: Props): React$MixedElement {
-  const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
-      multiple: false,
-      accept: 'application/zip'
-  });
-  
-  useEffect(() => {
-      if (acceptedFiles.length === 0) {
-          return;
-      }
-      onFilesChange(acceptedFiles[0]);
-  }, [acceptedFiles, onFilesChange]);
-
   return (
-      <div style={styles.dropzone} {...getRootProps({})}>
-        <input {...getInputProps()} />
-        <p>Drop or choose a Beat Saber map .zip file</p>
-      </div>
+    <div>
+      <div>Choose a Beat Saber map .zip file</div>
+      <input type="file" accept="application/zip" onChange={(e) => {
+        if (e.target.files.length > 0) {
+          onFilesChange(e.target.files[0]);
+        }
+      }} />
+    </div>
   );
 }
