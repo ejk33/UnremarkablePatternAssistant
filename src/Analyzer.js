@@ -2,10 +2,13 @@
 
 import type { MapDifficulty, Note } from "./MapDifficulty";
 
+import type { PatternClassification } from "./PatternClassifier";
+
 import { HandsTracker } from "./HandsTracker";
 
 export type NotePattern = {
-    notes: Array<Note>
+    notes: Array<Note>,
+    classification?: PatternClassification
 }
 
 type NoteGroups = Array<NotePattern>;

@@ -9,6 +9,16 @@ export type PatternClassification = {
     hasStacksOrTowers: boolean,
     hasTangles: boolean,
     hasHighNotes: boolean,
+    hasBombs: boolean,
+}
+
+function hasBombs(pattern: NotePattern): boolean {
+    for (let note of pattern.notes) {
+        if (note.type === 'bomb') {
+            return true;
+        }
+    }
+    return false;
 }
 
 function hasHorizontals(pattern: NotePattern): boolean {
@@ -71,11 +81,12 @@ function hasHighNotes(pattern: NotePattern): boolean {
     return false;
 }
 
-export function classifyPattern(pattern: NotePattern): PatternClassification {
-    return {
+export function classifyPattern(pattern: NotePattern): void {
+    pattern.classification = {
         hasHorizontals: hasHorizontals(pattern),
         hasHighNotes: hasHighNotes(pattern),
         hasStacksOrTowers: hasStacksOrTowers(pattern),
-        hasTangles: hasTangles(pattern)
+        hasTangles: hasTangles(pattern),
+        hasBombs: hasBombs(pattern)
     }
 }

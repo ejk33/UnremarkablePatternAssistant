@@ -2,6 +2,8 @@
 
 import type { NotePattern } from "./Analyzer";
 
+import { classifyPattern } from "./PatternClassifier";
+
 import downloadjs from 'downloadjs';
 import ObjectHash from 'object-hash';
 
@@ -40,6 +42,10 @@ export class PatternDatabase {
     }
 
     ingest(newPattern: NotePattern): void {
+        classifyPattern(newPattern);
+        if (newPattern.classification?.hasBombs) {
+            return;
+        }
         const hash = this.computePatternHash(newPattern);
         this.patterns.set(hash, newPattern);
     }
