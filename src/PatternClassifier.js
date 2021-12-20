@@ -2,6 +2,8 @@
 
 import type { NotePattern } from "./Analyzer";
 
+import type { Difficulty } from "./MapDifficulty";
+
 import { HandsTracker } from "./HandsTracker";
 
 export type PatternClassification = {
@@ -89,4 +91,29 @@ export function classifyPattern(pattern: NotePattern): void {
         hasTangles: hasTangles(pattern),
         hasBombs: hasBombs(pattern)
     }
+}
+
+export function isPatternSuitableForDifficulty(difficulty: Difficulty, pattern: NotePattern): boolean {
+    const classification = pattern.classification;
+    if (classification == null) {
+        throw new Error('Classification was not run');
+    }
+
+    if (difficulty <= 7 && classification.hasHorizontals) {
+        return false;
+    }
+
+    if (difficulty <= 5 && classification.hasStacksOrTowers) {
+        return false;
+    }
+
+    if (difficulty <= 3 && classification.hasTangles) {
+        return false;
+    }
+
+    if (difficulty <= 1 && classification.hasHighNotes) {
+        return false;
+    }
+
+    return true;
 }

@@ -1,11 +1,18 @@
 // @flow
 
 import type { NotePattern } from "./Analyzer";
-import type { MapDifficulty, Note, NoteDirection } from "./MapDifficulty";
+import type {
+  Difficulty,
+  MapDifficulty,
+  Note,
+  NoteDirection,
+} from "./MapDifficulty";
 import type { PatternDatabase } from "./PatternDatabase";
 
 import { HandsTracker } from "./HandsTracker";
 import { reverseDirection } from "./MapDifficulty";
+
+import { isPatternSuitableForDifficulty } from "./PatternClassifier";
 
 import Chance from 'chance';
 
@@ -25,14 +32,14 @@ function extractMappingTimes(mapDifficulty: MapDifficulty): Array<number> {
     return times;
 }
 
-function pickEligiblePattern(handsTracker: HandsTracker, patternsDb: PatternDatabase): NotePattern {
+function pickEligiblePattern(handsTracker: HandsTracker, patternsDb: PatternDatabase, difficulty: Difficulty): NotePattern {
     // Hands default state is Up, Up, so that the first notes to be initialized will be Down, Down
     let currentLeft: NoteDirection = handsTracker.state.left?.direction ?? 'N';
     let currentRight: NoteDirection = handsTracker.state.right?.direction ?? 'N';
     let reverseLeft = reverseDirection(currentLeft);
     let reverseRight = reverseDirection(currentRight);
     const newStartKey = `${reverseLeft}-${reverseRight}`;
-    let eligiblePatterns = patternsDb.startMap.get(newStartKey);
+    let eligiblePatterns = patternsDb.startMap.get(newStartKey)?.filter(pattern => isPatternSuitableForDifficulty(difficulty, pattern));
 
     if (eligiblePatterns == null || eligiblePatterns.length === 0) {
         console.warn('No patterns found for', newStartKey);
@@ -65,7 +72,7 @@ export function ReMap(mapDifficulty: MapDifficulty, patternsDb: PatternDatabase)
     let currentPattern: ?NotePattern = null;
 
     while (true) {
-        currentPattern = pickEligiblePattern(handsTracker, patternsDb);
+        currentPattern = pickEligiblePattern(handsTracker, patternsDb, mapDifficulty.difficulty);
         lastSourceTime = -1;
         console.info(`Remapping... At time index ${mappingTimesIndex}, Picked pattern `, currentPattern);
 
