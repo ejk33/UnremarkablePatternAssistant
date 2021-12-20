@@ -10,6 +10,15 @@ export type NotePattern = {
 
 type NoteGroups = Array<NotePattern>;
 
+function patternHasDots(pattern: NotePattern): boolean {
+    for (let note of pattern.notes) {
+        if (note.direction === 'DOT') {
+            return true;
+        }
+    }
+    return false;
+}
+
 export function analyzeMapPatterns(mapDifficulty: MapDifficulty): NoteGroups {
     const notes = mapDifficulty.notes;
     const groups: NoteGroups = [];
@@ -19,7 +28,9 @@ export function analyzeMapPatterns(mapDifficulty: MapDifficulty): NoteGroups {
     let lastTimestamp = 0;
 
     function breakGroup() {
-        groups.push(currentGroup);
+        if (!patternHasDots(currentGroup)) {
+            groups.push(currentGroup);
+        }
         currentGroup = {
             notes: []
         }
@@ -32,7 +43,7 @@ export function analyzeMapPatterns(mapDifficulty: MapDifficulty): NoteGroups {
         if (note.time - lastTimestamp > 1 && currentGroup.notes.length > 0) {
             // break due to long pause
             breakGroup();
-        } else if (currentGroup.notes.length >= 16 && !handTracker.areHandsHorizontal() && !handTracker.areHandsTangled()) {
+        } else if (currentGroup.notes.length >= 32 && !handTracker.areHandsHorizontal() && !handTracker.areHandsTangled()) {
             // group size limit reached
             breakGroup();
         } else {

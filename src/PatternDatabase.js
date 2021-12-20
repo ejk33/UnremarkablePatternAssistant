@@ -44,13 +44,16 @@ export class PatternDatabase {
     }
 
     async loadFromServer(onDone: () => void): Promise<void> {
-        const request = await fetch('/patterns.json', {
-            method: 'GET'
-        });
-        const response: Array<NotePattern> = await request.json();
-        for (let pattern of response) {
-            this.ingest(pattern);
+        try {
+            const request = await fetch('/patterns.json', {
+                method: 'GET'
+            });
+            const response: Array<NotePattern> = await request.json();
+            for (let pattern of response) {
+                this.ingest(pattern);
+            }
+        } finally {
+            onDone();
         }
-        onDone();
     }
 }
