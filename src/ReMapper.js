@@ -16,7 +16,7 @@ function extractMappingTimes(mapDifficulty: MapDifficulty): Array<number> {
     let lastTime = -1;
 
     for (let note of mapDifficulty.notes) {
-        if (note.time !== lastTime) {
+        if (note.time - lastTime > (1 / 64)) {
             times.push(note.time);
             lastTime = note.time;
         }
