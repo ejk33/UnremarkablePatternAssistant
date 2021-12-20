@@ -58,6 +58,7 @@ function App(): React$MixedElement {
     const groups = analyzeMapPatterns(mapDifficulty);
     for (let group of groups) {
       patternDatabase.ingest(group);
+      patternDatabase.recomputeHandidnessMaps();
     }
     setLastAnalysisOutput(groups.length);
   }, [patternDatabase, setLastAnalysisOutput]);

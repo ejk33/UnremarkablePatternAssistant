@@ -43,7 +43,7 @@ export function analyzeMapPatterns(mapDifficulty: MapDifficulty): NoteGroups {
         if (note.time - lastTimestamp > 1 && currentGroup.notes.length > 0) {
             // break due to long pause
             breakGroup();
-        } else if (currentGroup.notes.length >= 32 && !handTracker.areHandsHorizontal() && !handTracker.areHandsTangled()) {
+        } else if (currentGroup.notes.length >= 15 && !handTracker.areHandsHorizontal() && !handTracker.areHandsTangled()) {
             // group size limit reached
             breakGroup();
         } else {

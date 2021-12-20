@@ -43,6 +43,63 @@ export class PatternDatabase {
         downloadjs(data, 'patterns.json', 'text/plain');
     }
 
+    recomputeHandidnessMaps(): void {
+        const startMap = new Map<string, Array<NotePattern>>();
+        const endMap = new Map<string, Array<NotePattern>>();
+        for (let pattern of this.patterns) {
+            const hash = pattern[0];
+            const p = pattern[1];
+            let left = 'X';
+            let right = 'X';
+            let lastLeft = 'X';
+            let lastRight = 'X';
+            for (let note of p.notes) {
+                if (note.type === 'red' && left === 'X') {
+                    left = note.direction;
+                }
+                if (note.type === 'blue' && right === 'X') {
+                    right = note.direction;
+                }
+                if (note.type === 'red') {
+                    lastLeft = note.direction;
+                }
+                if (note.type === 'blue') {
+                    lastRight = note.direction;
+                }
+            }
+
+            const startHandidness = `${left}-${right}`;
+            let prevPatterns: Array<NotePattern> | void = startMap.get(startHandidness);
+            if (prevPatterns == null) {
+                prevPatterns = [];
+            }
+            prevPatterns.push(p);
+            startMap.set(startHandidness, prevPatterns);
+
+            const endHandidness = `${lastLeft}-${lastRight}`;
+            let endPatterns = endMap.get(endHandidness);
+            if (endPatterns == null) {
+                endPatterns = [];
+            }
+            endPatterns.push(p);
+            endMap.set(endHandidness, endPatterns);
+        }
+
+        console.info('START PATTERNS');
+        for (let handidnessStat of startMap) {
+            const handidness = handidnessStat[0];
+            const patterns = handidnessStat[1];
+            console.info(handidness, patterns.length);
+        }
+
+        console.info('END PATTERNS');
+        for (let stat of endMap) {
+            const handidness = stat[0];
+            const patterns = stat[1];
+            console.info(handidness, patterns.length);
+        }
+    }
+
     async loadFromServer(onDone: () => void): Promise<void> {
         try {
             const request = await fetch('/patterns.json', {
@@ -52,6 +109,7 @@ export class PatternDatabase {
             for (let pattern of response) {
                 this.ingest(pattern);
             }
+            this.recomputeHandidnessMaps();
         } finally {
             onDone();
         }
