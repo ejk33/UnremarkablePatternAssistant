@@ -5,6 +5,7 @@ import type { MapDifficulty } from "./MapDifficulty";
 
 import type { ModalLayerState } from "./useModalLayerState";
 
+import { Editor } from "./Editor.react";
 import { FullModal } from "./FullModal.react";
 
 import React from 'react';
@@ -54,7 +55,7 @@ export default function GeneralInfo({beatMap, modalLayerState, onAnalyzeClick, o
             {
                 isEditorOpen && (
                     <FullModal onClose={onEditorClose} modalLayerState={modalLayerState}>
-                        <div>The editor</div>
+                        <Editor beatMap={beatMap} />
                     </FullModal>
                 )
             }

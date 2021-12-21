@@ -10,22 +10,16 @@ export type ModalLayerState = {
 export function useModalLayerState(): ModalLayerState {
 
     /* eslint-disable */
-    const [layersCount, setLayersCount] = useState<number>(0);
+    const [layersCount, setLayersCount] = useState<{count: number}>({count: 0});
     /* eslint-enable */
 
     const createLayer = useCallback(() => {
-        let newLayerIndex = -1;
-        setLayersCount(oldCount => {
-            newLayerIndex = oldCount + 1;
-            return newLayerIndex;
-        })
-        return newLayerIndex;
-    }, [setLayersCount]);
+        layersCount.count += 1;
+        return layersCount.count;
+    }, [layersCount]);
 
     const closeLayer = useCallback(() => {
-        setLayersCount(oldCount => {
-            return oldCount - 1;
-        })
+        layersCount.count -= 1;
     }, []);
 
     return {
