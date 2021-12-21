@@ -25,43 +25,64 @@ const styles = {
     }
 }
 
+type FilterType = 'main' | 'low' | 'mid' | 'high';
+
+function createFilters(wavesurfer: any, type: FilterType): Array<any> | null {
+    if (type === 'main') {
+        return null;
+    }
+    const ac: BaseAudioContext = wavesurfer.backend.ac;
+    if (type === 'low') {
+        const filter = ac.createBiquadFilter();
+        filter.frequency.setValueAtTime(250, 0);
+        filter.type = 'lowpass';
+        return [filter];
+    }
+
+    return null;
+}
+
+function createWaveSurfer(domSelector: string, beatMap: BeatMap, type: FilterType): any {
+    const wavesurfer = WaveSurfer.create({
+        container: domSelector,
+        scrollParent: true,
+        autoCenter: false,
+        partialRender: true,
+        removeMediaElementOnDestroy: true,
+        hideCursor: true,
+        interact: false,
+        hideScrollbar: true,
+        progressColor: '#555',
+        waveColor: '#555',
+        cursorWidth: 0
+    });
+    const filters = createFilters(wavesurfer, type);
+    if (filters != null) {
+        wavesurfer.backend.setFilter(filters[0]);
+    }
+    wavesurfer.loadBlob(beatMap.songBlobData);
+    wavesurfer.zoom(VIEWER_PX_PER_SEC);
+    return wavesurfer;
+}
+
 export function Viewer({beatMap}: Props): React$MixedElement | null {
-    const [wavesurfer, setWavesurfer] = useState<any>(null);
+    const [mainPlayer, setMainPlayer] = useState<any>(null);
 
     useEffect(() => {
-        let wavesurfer = null;
-        setWavesurfer(() => {
-            wavesurfer = WaveSurfer.create({
-                container: '#waveform',
-                scrollParent: true,
-                autoCenter: false,
-                partialRender: true,
-                removeMediaElementOnDestroy: true,
-                hideCursor: true,
-                interact: false,
-                hideScrollbar: true,
-                progressColor: '#555',
-                waveColor: '#555',
-                cursorWidth: 0
-            });
-            wavesurfer.loadBlob(beatMap.songBlobData);
-            wavesurfer.zoom(VIEWER_PX_PER_SEC);
-            return wavesurfer;
+        setMainPlayer(() => {
+            createWaveSurfer('#waveform', beatMap, 'main');
+            createWaveSurfer('#waveform-low', beatMap, 'low');
         });
-        return () => {
-            if (wavesurfer != null) {
-                wavesurfer.destroy();
-            }
-        }
     }, [beatMap]); 
 
     const onPlay = useCallback(() => {
-        wavesurfer.play();
-    }, [wavesurfer]);
+        mainPlayer.play();
+    }, [mainPlayer]);
 
     return (
         <div style={styles.container}>
             <div id="waveform"></div>
+            <div id="waveform-low"></div>
             <button onClick={onPlay}>Play</button>
         </div>
     );
