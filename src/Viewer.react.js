@@ -15,7 +15,7 @@ type Props = {
 const styles = {
     waveviewer: {
         width: '100%',
-        height: '400px'
+        height: '200px'
     },
     container: {
         width: '100%',
@@ -34,7 +34,15 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
             wavesurfer = WaveSurfer.create({
                 container: '#waveform',
                 scrollParent: true,
-                autoCenter: false
+                autoCenter: false,
+                partialRender: true,
+                removeMediaElementOnDestroy: true,
+                hideCursor: true,
+                interact: false,
+                hideScrollbar: true,
+                progressColor: '#555',
+                waveColor: '#555',
+                cursorWidth: 0
             });
             wavesurfer.loadBlob(beatMap.songBlobData);
             wavesurfer.zoom(VIEWER_PX_PER_SEC);
