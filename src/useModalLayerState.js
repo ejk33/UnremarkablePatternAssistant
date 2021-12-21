@@ -9,7 +9,9 @@ export type ModalLayerState = {
 
 export function useModalLayerState(): ModalLayerState {
 
+    /* eslint-disable */
     const [layersCount, setLayersCount] = useState<number>(0);
+    /* eslint-enable */
 
     const createLayer = useCallback(() => {
         let newLayerIndex = -1;

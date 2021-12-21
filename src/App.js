@@ -12,6 +12,8 @@ import { PatternDatabase } from "./PatternDatabase";
 
 import { ReMap } from "./ReMapper";
 
+import { useModalLayerState } from "./useModalLayerState";
+
 import React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -32,12 +34,12 @@ function Header(): React$MixedElement {
 }
 
 async function processFile(file: File, setBeatMap) {
-  console.info('<><><> process input file');
   const beatMap = await readFromZipArchive(file);
   setBeatMap(beatMap);
 }
 
 function App(): React$MixedElement {
+  const modalLayerState = useModalLayerState();
   const [beatMap, setBeatMap] = useState<?BeatMap>(null);
   const [lastAnalysisOutput, setLastAnalysisOutput] = useState(null);
   const [dbLoaded, setDbLoaded] = useState(false);
@@ -66,7 +68,6 @@ function App(): React$MixedElement {
 
   const onReMapClick = useCallback((mapDifficulty) => {
     ReMap(mapDifficulty, patternDatabase);
-    console.info('ReMap completed');
     setBeatMap(beatMap => {
       return beatMap == null ? null : {
         ...beatMap
@@ -78,11 +79,15 @@ function App(): React$MixedElement {
     patternDatabase.serialize();
   }, [patternDatabase]);
 
+  const [downloadingBeatMap, setDownloadingBeatMap] = useState(false);
   const downloadBeatMapZip = useCallback(() => {
     if (beatMap == null) {
       return;
     }
-    updateAndDownloadZip(beatMap);
+    setDownloadingBeatMap(true);
+    updateAndDownloadZip(beatMap, () => {
+      setDownloadingBeatMap(false);
+    });
   }, [beatMap]);
 
   if (!dbLoaded) {
@@ -97,8 +102,8 @@ function App(): React$MixedElement {
         lastAnalysisOutput != null && <div style={styles.text}>Imported {lastAnalysisOutput} patterns.</div>
       }
       <button style={styles.button} onClick={downloadPatternsDatabase}>Download patterns database. {patternDatabase.size()} patterns</button>
-      <GeneralInfo beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} onReMapClick={onReMapClick} />
-      { beatMap != null && <button style={styles.button} onClick={downloadBeatMapZip}>Download map .zip</button>}
+      <GeneralInfo modalLayerState={modalLayerState} beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} onReMapClick={onReMapClick} />
+      {beatMap != null && <button disabled={downloadingBeatMap} style={styles.button} onClick={downloadBeatMapZip}>{downloadingBeatMap ? 'Downloading...' : 'Download map .zip'}</button>}
     </div>
   );
 }

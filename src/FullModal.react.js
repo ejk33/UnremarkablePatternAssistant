@@ -26,7 +26,7 @@ const styles = {
     }
 }
 
-export function FullModal({modalLayerState, children}: Props): React$MixedElement | null {
+export function FullModal({modalLayerState, children, onClose}: Props): React$MixedElement | null {
     const [layerNumber, setLayerNumber] = useState<number | null>(null);
     useEffect(() => {
         setLayerNumber(() => {
@@ -35,7 +35,7 @@ export function FullModal({modalLayerState, children}: Props): React$MixedElemen
         return () => {
             modalLayerState.closeLayer();
         }
-    }, []);
+    }, [modalLayerState]);
 
     if (layerNumber == null) {
         return null;
@@ -53,7 +53,7 @@ export function FullModal({modalLayerState, children}: Props): React$MixedElemen
 
     return (
         <div style={overlayStyle}>
-            <div style={styles.closeButton}>CLOSE</div>
+            <div style={styles.closeButton} onClick={onClose}>CLOSE</div>
             {children}
         </div>
     );
