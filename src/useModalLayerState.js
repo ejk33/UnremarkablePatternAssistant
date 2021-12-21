@@ -20,7 +20,7 @@ export function useModalLayerState(): ModalLayerState {
 
     const closeLayer = useCallback(() => {
         layersCount.count -= 1;
-    }, []);
+    }, [layersCount]);
 
     return {
         createLayer,

@@ -33,9 +33,13 @@ function Header(): React$MixedElement {
   return <h1>UNREMARKABLE PATTERN ASSISTANT</h1>;
 }
 
-async function processFile(file: File, setBeatMap) {
-  const beatMap = await readFromZipArchive(file);
-  setBeatMap(beatMap);
+async function processFile(file: File, setBeatMap, onDone: () => void) {
+  try {
+    const beatMap = await readFromZipArchive(file);
+    setBeatMap(beatMap);
+  } finally {
+    onDone();
+  }
 }
 
 function App(): React$MixedElement {
@@ -53,8 +57,10 @@ function App(): React$MixedElement {
     });
   }, [patternDatabase, setDbLoaded]);
 
+  const [loadingFile, setLoadingFile] = useState(false);
   const onFilesChange = useCallback((file) => {
-    processFile(file, setBeatMap);
+    setLoadingFile(true);
+    processFile(file, setBeatMap, () => {setLoadingFile(false)});
   }, []);
 
   const onAnalyzeClick = useCallback((mapDifficulty) => {
@@ -102,6 +108,7 @@ function App(): React$MixedElement {
         lastAnalysisOutput != null && <div style={styles.text}>Imported {lastAnalysisOutput} patterns.</div>
       }
       <button style={styles.button} onClick={downloadPatternsDatabase}>Download patterns database. {patternDatabase.size()} patterns</button>
+      {loadingFile && <div>Loading...</div>}
       <GeneralInfo modalLayerState={modalLayerState} beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} onReMapClick={onReMapClick} />
       {beatMap != null && <button disabled={downloadingBeatMap} style={styles.button} onClick={downloadBeatMapZip}>{downloadingBeatMap ? 'Downloading...' : 'Download map .zip'}</button>}
     </div>
