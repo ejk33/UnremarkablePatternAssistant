@@ -21,7 +21,7 @@ type Props = {
 export default function FileInput({onFilesChange}: Props): React$MixedElement {
   return (
     <div>
-      <div style={styles.message}>Choose a Beat Saber map .zip file</div>
+      <div style={styles.message}>Choose a map .zip file</div>
       <input style={styles.dropzone} type="file" accept="application/zip" onChange={(e) => {
         if (e.target.files.length > 0) {
           onFilesChange(e.target.files[0]);
