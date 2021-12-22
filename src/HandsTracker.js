@@ -1,6 +1,5 @@
 // @flow
 
-import type { NotePattern } from "./Analyzer";
 import type { Note, NoteColumn, NoteDirection, NoteRow } from "./MapDifficulty";
 
 import { directionsMinimumAbsDifference } from "./MapDifficulty";
