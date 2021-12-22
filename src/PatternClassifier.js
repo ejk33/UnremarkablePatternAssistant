@@ -12,6 +12,7 @@ export type PatternClassification = {
     hasTangles: boolean,
     hasHighNotes: boolean,
     hasBombs: boolean,
+    hasParityIssues: boolean
 }
 
 function hasBombs(pattern: NotePattern): boolean {
@@ -83,13 +84,22 @@ function hasHighNotes(pattern: NotePattern): boolean {
     return false;
 }
 
+function hasParityIssues(pattern: NotePattern): boolean {
+    const tracker = new HandsTracker();
+    for (let note of pattern.notes) {
+        tracker.applyNote(note);
+    }
+    return tracker.isParityViolated();
+}
+
 export function classifyPattern(pattern: NotePattern): void {
     pattern.classification = {
         hasHorizontals: hasHorizontals(pattern),
         hasHighNotes: hasHighNotes(pattern),
         hasStacksOrTowers: hasStacksOrTowers(pattern),
         hasTangles: hasTangles(pattern),
-        hasBombs: hasBombs(pattern)
+        hasBombs: hasBombs(pattern),
+        hasParityIssues: hasParityIssues(pattern)
     }
 }
 
@@ -97,6 +107,11 @@ export function isPatternSuitableForDifficulty(difficulty: Difficulty, pattern: 
     const classification = pattern.classification;
     if (classification == null) {
         throw new Error('Classification was not run');
+    }
+
+    // Never suggest parity violating patterns for any difficulty
+    if (classification.hasParityIssues) {
+        return false;
     }
 
     if (difficulty <= 7 && classification.hasHorizontals) {
