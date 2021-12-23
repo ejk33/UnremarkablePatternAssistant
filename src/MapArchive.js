@@ -15,7 +15,8 @@ export type BeatMap = {
     difficulties: Array<MapDifficulty>,
     archive: any,
     originalFileName: string,
-    songBlobData: Blob
+    songBlobData: Blob,
+    bpm: number,
 }
 
 function readFileToBlob(file: File): Promise<ArrayBuffer> {
@@ -43,7 +44,8 @@ export async function readFromZipArchive(zipFile: File): Promise<BeatMap> {
         difficulties: [],
         archive: zip,
         originalFileName: zipFile.name,
-        songBlobData: songRawData
+        songBlobData: songRawData,
+        bpm: infoObj._beatsPerMinute,
     };
     for (let set of sets) {
         if (set._beatmapCharacteristicName === 'Standard') {
