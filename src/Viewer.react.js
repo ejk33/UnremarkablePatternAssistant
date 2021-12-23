@@ -112,6 +112,25 @@ function Measures({bpm, scroll}: MeasuresProps): React$MixedElement | null {
 }
 
 export function Viewer({beatMap}: Props): React$MixedElement | null {
+    
+
+    useEffect(() => {
+        const container = document.getElementById('viewer-container');
+        if (container == null) {
+            return;
+        }
+
+        // $FlowFixMe
+        container.addEventListener('mousewheel', (event) => {
+            if (event.deltaY > 0) {
+                console.info('wheel down');
+            }
+            if (event.deltaY < 0) {
+                console.info('wheel up');
+            }
+        }, false);
+    }, []);
+
     const [mainPlayer, setMainPlayer] = useState<any>(null);
 
     useEffect(() => {
@@ -125,7 +144,7 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
     }, [mainPlayer]);
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} id="viewer-container">
             <Measures bpm={beatMap.bpm} scroll={0} cursorPosition={0} />
             <div id="waveform"></div>
             <div id="waveform-low"></div>
