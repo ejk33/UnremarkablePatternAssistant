@@ -23,15 +23,18 @@ const styles = {
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative'
     },
     measuresContainer: {
         width: '100%',
-        height: '200px',
-        position: 'relative',
-        overflow: 'hidden'
+        height: '400px',
+        position: 'absolute',
+        overflow: 'hidden',
+        top: 0,
+        left: 0
     },
     beatBar: {
-        height: '100px',
+        height: '400px',
         width: '1px',
         backgroundColor: '#afafaf',
         position: 'absolute',
@@ -126,7 +129,6 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
             <Measures bpm={beatMap.bpm} scroll={0} cursorPosition={0} />
             <div id="waveform"></div>
             <div id="waveform-low"></div>
-            <button onClick={onPlay}>Play</button>
         </div>
     );
 }
