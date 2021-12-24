@@ -85,6 +85,11 @@ function App(): React$MixedElement {
     patternDatabase.serialize();
   }, [patternDatabase]);
 
+  const clearPatternsDatabase = useCallback(() => {
+    patternDatabase.clear();
+    setLastAnalysisOutput(0);
+  }, [patternDatabase, setLastAnalysisOutput]);
+
   const [downloadingBeatMap, setDownloadingBeatMap] = useState(false);
   const downloadBeatMapZip = useCallback(() => {
     if (beatMap == null) {
@@ -108,6 +113,7 @@ function App(): React$MixedElement {
         lastAnalysisOutput != null && <div style={styles.text}>Imported {lastAnalysisOutput} patterns.</div>
       }
       <button style={styles.button} onClick={downloadPatternsDatabase}>Download patterns database. {patternDatabase.size()} patterns</button>
+      <button style={styles.button} onClick={clearPatternsDatabase}>Clear patterns database.</button>
       {loadingFile && <div>Loading...</div>}
       <GeneralInfo modalLayerState={modalLayerState} beatMap={beatMap} onAnalyzeClick={onAnalyzeClick} onReMapClick={onReMapClick} />
       {beatMap != null && <button disabled={downloadingBeatMap} style={styles.button} onClick={downloadBeatMapZip}>{downloadingBeatMap ? 'Downloading...' : 'Download map .zip'}</button>}

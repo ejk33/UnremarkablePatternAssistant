@@ -3,7 +3,7 @@
 import type { BeatMap } from "./MapArchive";
 
 import React from 'react';
-import { lazy, useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as WaveSurfer from 'wavesurfer.js';
 import ReactDOM from 'react-dom';
 
@@ -77,7 +77,6 @@ function Measures({bpm, scroll}: MeasuresProps): React$MixedElement | null {
         if (node == null) {
             return;
         }
-        // Clear the node
         const startPosition = scroll;
         const endPosition = scroll + node.offsetWidth;
         const pxPerMin = 60 * VIEWER_PX_PER_SEC;
@@ -85,7 +84,6 @@ function Measures({bpm, scroll}: MeasuresProps): React$MixedElement | null {
         const startBeat = Math.floor(beatsPerPx * startPosition);
         const endBeat = Math.ceil(beatsPerPx * endPosition) + 1;
         const pxPerBeat = pxPerMin / bpm;
-        const pxPerQuarterBeat = pxPerBeat / 4;
         const beatReactNodes = [];
         for (let beat = startBeat; beat <= endBeat; beat++) {
             const absPxPosition = pxPerBeat * beat;
@@ -105,7 +103,7 @@ function Measures({bpm, scroll}: MeasuresProps): React$MixedElement | null {
         return () => {
             ReactDOM.unmountComponentAtNode(node);
         }
-    }, [scroll]);
+    }, [scroll, bpm, containerRef]);
     return (
         <div ref={containerRef} style={styles.measuresContainer}></div>
     );
@@ -131,7 +129,9 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
         }, false);
     }, []);
 
+    /* eslint-disable */
     const [mainPlayer, setMainPlayer] = useState<any>(null);
+    /* eslint-enable */
 
     useEffect(() => {
         setMainPlayer(() => {
@@ -139,9 +139,9 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
         });
     }, [beatMap]); 
 
-    const onPlay = useCallback(() => {
-        mainPlayer.play();
-    }, [mainPlayer]);
+    // const onPlay = useCallback(() => {
+    //     mainPlayer.play();
+    // }, [mainPlayer]);
 
     return (
         <div style={styles.container} id="viewer-container">

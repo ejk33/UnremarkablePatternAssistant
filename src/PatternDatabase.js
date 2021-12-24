@@ -131,4 +131,9 @@ export class PatternDatabase {
             onDone();
         }
     }
+
+    clear(): void {
+        this.patterns = new Map();
+        this.recomputeHandidnessMaps();
+    }
 }
