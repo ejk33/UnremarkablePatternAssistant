@@ -15,7 +15,7 @@ import { ReMap } from "./ReMapper";
 import { useModalLayerState } from "./useModalLayerState";
 
 import React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const styles = {
   container: {
@@ -46,16 +46,10 @@ function App(): React$MixedElement {
   const modalLayerState = useModalLayerState();
   const [beatMap, setBeatMap] = useState<?BeatMap>(null);
   const [lastAnalysisOutput, setLastAnalysisOutput] = useState(null);
-  const [dbLoaded, setDbLoaded] = useState(false);
+  const [dbLoaded, setDbLoaded] = useState(true);
   const patternDatabase = useMemo(() => {
     return new PatternDatabase();
   }, []);
-
-  useEffect(() => {
-    patternDatabase.loadFromServer(() => {
-      setDbLoaded(true);
-    });
-  }, [patternDatabase, setDbLoaded]);
 
   const [loadingFile, setLoadingFile] = useState(false);
   const onFilesChange = useCallback((file) => {
@@ -80,6 +74,13 @@ function App(): React$MixedElement {
       }
     })
   }, [patternDatabase, setBeatMap]);
+
+  const loadBuiltInPatterns = useCallback(() => {
+    setDbLoaded(false);
+    patternDatabase.loadFromServer(() => {
+      setDbLoaded(true);
+    });
+  }, [patternDatabase]);
 
   const downloadPatternsDatabase = useCallback(() => {
     patternDatabase.serialize();
@@ -112,6 +113,7 @@ function App(): React$MixedElement {
       {
         lastAnalysisOutput != null && <div style={styles.text}>Imported {lastAnalysisOutput} patterns.</div>
       }
+      <button style={styles.button} onClick={loadBuiltInPatterns}>Load built-in patterns</button>
       <button style={styles.button} onClick={downloadPatternsDatabase}>Download patterns database. {patternDatabase.size()} patterns</button>
       <button style={styles.button} onClick={clearPatternsDatabase}>Clear patterns database.</button>
       {loadingFile && <div>Loading...</div>}
