@@ -78,35 +78,45 @@ function Measures({position}: MeasuresProps): React$MixedElement | null {
         if (node == null) {
             return;
         }
-        // const startPosition = scroll;
-        // const endPosition = scroll + node.offsetWidth;
-        // const pxPerMin = 60 * VIEWER_PX_PER_SEC;
-        // const beatsPerPx = bpm / pxPerMin;
-        // const startBeat = Math.floor(beatsPerPx * startPosition);
-        // const endBeat = Math.ceil(beatsPerPx * endPosition) + 1;
-        // const pxPerBeat = pxPerMin / bpm;
-        const startBeat = position.beat - 1;
-        
+        const viewerPxWidth = node.offsetWidth;
+        const halfPxOffset = viewerPxWidth / 2;
+        const halfSecOffset = halfPxOffset / VIEWER_PX_PER_SEC;
+        const startSec = position.preciseTimeSeconds - halfSecOffset;
+        const beatsPerSec = position.bpm / 60;
+        const secPerBeat = 1 / beatsPerSec;
+        const pxPerBeat = secPerBeat * VIEWER_PX_PER_SEC;
+        const startBeat = startSec * beatsPerSec;
+        const startPxPosition = startSec * VIEWER_PX_PER_SEC;
+
         const beatReactNodes = [];
-        for (let beat = startBeat; beat <= endBeat; beat++) {
-            const absPxPosition = pxPerBeat * beat;
-            const relPxPosition = absPxPosition - startPosition;
-            console.info('Rendering a beat', {
-                beat: beat,
-                absposition: absPxPosition,
-                relPxPosition
-            })
+        let currentBeat = startBeat;
+        while (true) {
+            const absPxPosition = pxPerBeat * currentBeat;
+            const relPxPosition = absPxPosition - startPxPosition;
+            if (relPxPosition > viewerPxWidth) {
+                break;
+            }
+
             const beatStyle = {
                 ...styles.beatBar,
                 left: relPxPosition
             };
-            beatReactNodes.push(<div style={beatStyle} key={beat}></div>);
+            beatReactNodes.push(<div style={beatStyle} key={currentBeat}></div>);
+
+            const beatNumberStyle= {
+                ...styles.beatNumber,
+                left: relPxPosition
+            };
+            beatReactNodes.push(<div style={beatNumberStyle} key={`num-${currentBeat}`}></div>);
+
+            currentBeat += 1;
         }
+
         ReactDOM.render(<>{beatReactNodes}</>, node);
         return () => {
             ReactDOM.unmountComponentAtNode(node);
         }
-    }, [scroll, bpm, containerRef]);
+    }, [containerRef, position.bpm, position.preciseTimeSeconds]);
     return (
         <div ref={containerRef} style={styles.measuresContainer}></div>
     );
@@ -157,7 +167,7 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
 
     return (
         <div style={styles.container} id="viewer-container">
-            <Measures bpm={beatMap.bpm} scroll={0} cursorPosition={0} />
+            <Measures position={audioPositionState} />
             <div id="waveform"></div>
             <div id="waveform-low"></div>
         </div>
