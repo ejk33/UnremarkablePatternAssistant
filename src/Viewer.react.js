@@ -3,9 +3,11 @@
 import type { BeatMap } from "./MapArchive";
 
 import React from 'react';
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as WaveSurfer from 'wavesurfer.js';
 import ReactDOM from 'react-dom';
+import { AudioPosition } from "./AudioPosition";
+import type { AudioPositionPublicState } from "./AudioPosition";
 
 export const VIEWER_PX_PER_SEC = 250;
 
@@ -66,24 +68,25 @@ function createWaveSurfer(domSelector: string, beatMap: BeatMap): any {
 }
 
 type MeasuresProps = {
-    bpm: number,
-    scroll: number,
+    position: AudioPositionPublicState
 }
 
-function Measures({bpm, scroll}: MeasuresProps): React$MixedElement | null {
+function Measures({position}: MeasuresProps): React$MixedElement | null {
     const containerRef = React.createRef();
     useEffect(() => {
         const node = containerRef.current;
         if (node == null) {
             return;
         }
-        const startPosition = scroll;
-        const endPosition = scroll + node.offsetWidth;
-        const pxPerMin = 60 * VIEWER_PX_PER_SEC;
-        const beatsPerPx = bpm / pxPerMin;
-        const startBeat = Math.floor(beatsPerPx * startPosition);
-        const endBeat = Math.ceil(beatsPerPx * endPosition) + 1;
-        const pxPerBeat = pxPerMin / bpm;
+        // const startPosition = scroll;
+        // const endPosition = scroll + node.offsetWidth;
+        // const pxPerMin = 60 * VIEWER_PX_PER_SEC;
+        // const beatsPerPx = bpm / pxPerMin;
+        // const startBeat = Math.floor(beatsPerPx * startPosition);
+        // const endBeat = Math.ceil(beatsPerPx * endPosition) + 1;
+        // const pxPerBeat = pxPerMin / bpm;
+        const startBeat = position.beat - 1;
+        
         const beatReactNodes = [];
         for (let beat = startBeat; beat <= endBeat; beat++) {
             const absPxPosition = pxPerBeat * beat;
@@ -110,7 +113,15 @@ function Measures({bpm, scroll}: MeasuresProps): React$MixedElement | null {
 }
 
 export function Viewer({beatMap}: Props): React$MixedElement | null {
-    
+    const audioPosition = useMemo(() => {
+        return new AudioPosition(beatMap.bpm);
+    }, [beatMap.bpm]);
+
+    const [audioPositionState, setAudioPositionState] = useState<AudioPositionPublicState>(audioPosition.getStateCopy());
+
+    useEffect(() => {
+        setAudioPositionState(audioPosition.getStateCopy());
+    }, [audioPosition]);
 
     useEffect(() => {
         const container = document.getElementById('viewer-container');
@@ -121,13 +132,14 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
         // $FlowFixMe
         container.addEventListener('mousewheel', (event) => {
             if (event.deltaY > 0) {
-                console.info('wheel down');
+                audioPosition.backward();
             }
             if (event.deltaY < 0) {
-                console.info('wheel up');
+                audioPosition.forward();
             }
+            setAudioPositionState(audioPosition.getStateCopy());
         }, false);
-    }, []);
+    }, [audioPosition]);
 
     /* eslint-disable */
     const [mainPlayer, setMainPlayer] = useState<any>(null);
