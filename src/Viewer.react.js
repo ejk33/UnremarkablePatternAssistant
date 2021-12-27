@@ -3,7 +3,7 @@
 import type { BeatMap } from "./MapArchive";
 
 import React from 'react';
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as WaveSurfer from 'wavesurfer.js';
 import { AudioPosition } from "./AudioPosition";
 import type { AudioPositionPublicState } from "./AudioPosition";
@@ -132,9 +132,34 @@ function Measures({position}: MeasuresProps): React$MixedElement | null {
     );
 }
 
+type WaveformProps = {
+    beatMap: BeatMap,
+    onLoaded: (length: number) => void
+}
+
+function Waveform({beatMap, onLoaded}: WaveformProps): React$MixedElement | null {
+    /* eslint-disable */
+    const [mainPlayer, setMainPlayer] = useState<any>(null);
+    /* eslint-enable */
+
+    useEffect(() => {
+        setMainPlayer(() => {
+            const surfer = createWaveSurfer('#waveform', beatMap);
+            surfer.on('ready', () => {
+                onLoaded(surfer.getDuration());
+            });
+            return surfer;
+        });
+    }, [beatMap, onLoaded]); 
+
+    return <div id="waveform"></div>;
+}
+
+const WaveformMemo = React.memo(Waveform);
+
 export function Viewer({beatMap}: Props): React$MixedElement | null {
     const audioPosition = useMemo(() => {
-        return new AudioPosition(beatMap.bpm);
+        return new AudioPosition(beatMap.bpm, 1);
     }, [beatMap.bpm]);
 
     const [audioPositionState, setAudioPositionState] = useState<AudioPositionPublicState>(audioPosition.getStateCopy());
@@ -161,25 +186,14 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
         }, false);
     }, [audioPosition]);
 
-    /* eslint-disable */
-    const [mainPlayer, setMainPlayer] = useState<any>(null);
-    /* eslint-enable */
-
-    useEffect(() => {
-        setMainPlayer(() => {
-            return createWaveSurfer('#waveform', beatMap);
-        });
-    }, [beatMap]); 
-
-    // const onPlay = useCallback(() => {
-    //     mainPlayer.play();
-    // }, [mainPlayer]);
+    const onSongLoaded = useCallback((length: number) => {
+        audioPosition.setLength(length);
+    }, [audioPosition]);
 
     return (
         <div style={styles.container} id="viewer-container">
             <Measures position={audioPositionState} />
-            <div id="waveform"></div>
-            <div id="waveform-low"></div>
+            <WaveformMemo beatMap={beatMap} onLoaded={onSongLoaded} />
         </div>
     );
 }

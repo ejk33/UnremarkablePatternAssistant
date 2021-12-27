@@ -3,6 +3,7 @@
 export type AudioPositionState = {
     bpm: number;
     precision: number;
+    length: number;
     preciseTimeSeconds: number;
 }
 
@@ -16,12 +17,18 @@ export class AudioPosition {
 
     state: AudioPositionState;
 
-    constructor(bpm: number) {
+    constructor(bpm: number, songLengthSeconds: number) {
         this.state = {
             bpm: bpm,
             precision: 4,
+            length: songLengthSeconds,
             preciseTimeSeconds: 0
         };
+    }
+
+    setLength(length: number): void {
+        this.state.length = length;
+        this.snap();
     }
 
     _getSecondsPerBeat(): number {
@@ -44,10 +51,20 @@ export class AudioPosition {
     snap(): void {
         const secondsPerSubBeat = this._getSecondsPerSubBeat();
         const subBeatIndex = Math.round(this.state.preciseTimeSeconds / secondsPerSubBeat);
+        let preciseTime = subBeatIndex * secondsPerSubBeat;
+        if (preciseTime < 0) {
+            preciseTime = 0;
+        }
+        if (preciseTime > this.state.length) {
+            this.state.preciseTimeSeconds -= this._getSecondsPerSubBeat();
+            this.snap();
+            return;
+        }
         this.state = {
             bpm: this.state.bpm,
             precision: this.state.precision,
-            preciseTimeSeconds: subBeatIndex * secondsPerSubBeat
+            length: this.state.length,
+            preciseTimeSeconds: preciseTime,
         }
     }
 
@@ -63,13 +80,13 @@ export class AudioPosition {
     }
 
     forward(): void {
-        this.snap();
         this.state.preciseTimeSeconds += this._getSecondsPerSubBeat();
+        this.snap();
     }
 
     backward(): void {
-        this.snap();
         this.state.preciseTimeSeconds -= this._getSecondsPerSubBeat();
+        this.snap();
     }
 
 }
