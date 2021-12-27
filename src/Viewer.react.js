@@ -89,23 +89,27 @@ function Measures({position}: MeasuresProps): React$MixedElement | null {
             return null;
         }
         const viewerPxWidth = node.offsetWidth;
+        const viewerSecWidth = viewerPxWidth / VIEWER_PX_PER_SEC;
         const halfPxOffset = viewerPxWidth / 2;
         const halfSecOffset = halfPxOffset / VIEWER_PX_PER_SEC;
-        const startSec = position.preciseTimeSeconds - halfSecOffset;
+        let startSec = position.preciseTimeSeconds - halfSecOffset;
+        if ((startSec + viewerSecWidth) > position.length) {
+            startSec = position.length - viewerSecWidth;
+        }
+        if (startSec < 0) {
+            startSec = 0;
+        }
         const beatsPerSec = position.bpm / 60;
         const secPerBeat = 1 / beatsPerSec;
         const pxPerBeat = secPerBeat * VIEWER_PX_PER_SEC;
         const startBeat = startSec * beatsPerSec;
         const startPxPosition = startSec * VIEWER_PX_PER_SEC;
-        console.info({
-            startSec, beatsPerSec, secPerBeat, startBeat, startPxPosition
-        });
 
         const beatReactNodes = [];
         let currentBeat = startBeat;
         while (true) {
             const absPxPosition = pxPerBeat * currentBeat;
-            const relPxPosition = absPxPosition - startPxPosition;
+            let relPxPosition = absPxPosition - startPxPosition;
             if (relPxPosition > viewerPxWidth) {
                 break;
             }
@@ -182,7 +186,17 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
             if (event.deltaY < 0) {
                 audioPosition.forward();
             }
-            setAudioPositionState(audioPosition.getStateCopy());
+            const audioPositionState = audioPosition.getStateCopy();
+            setAudioPositionState(audioPositionState);
+
+            const waveformDiv = document.getElementById('waveform');
+            const waveformElement = waveformDiv?.children[0];
+            if (waveformElement != null) {
+                const px = audioPositionState.preciseTimeSeconds * VIEWER_PX_PER_SEC;
+                const viewerPxWidth = container.offsetWidth;
+                const scrollX = px - (viewerPxWidth / 2);
+                waveformElement.scrollTo(scrollX, 0);
+            }
         }, false);
     }, [audioPosition]);
 
