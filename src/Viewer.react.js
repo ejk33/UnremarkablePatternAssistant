@@ -5,7 +5,6 @@ import type { BeatMap } from "./MapArchive";
 import React from 'react';
 import { useEffect, useMemo, useState } from "react";
 import * as WaveSurfer from 'wavesurfer.js';
-import ReactDOM from 'react-dom';
 import { AudioPosition } from "./AudioPosition";
 import type { AudioPositionPublicState } from "./AudioPosition";
 
@@ -71,12 +70,23 @@ type MeasuresProps = {
     position: AudioPositionPublicState
 }
 
+let idCounter = 0;
+
 function Measures({position}: MeasuresProps): React$MixedElement | null {
-    const containerRef = React.createRef();
+    const containerNumber = useMemo(() => {
+        idCounter += 1;
+        return idCounter;
+    }, []);
+    const containerId = `autoid${containerNumber}`;
+
+    const [node, setNode] = useState(null);
     useEffect(() => {
-        const node = containerRef.current;
+        setNode(document.getElementById(containerId));
+    }, [containerId]);
+
+    const children = (() => {
         if (node == null) {
-            return;
+            return null;
         }
         const viewerPxWidth = node.offsetWidth;
         const halfPxOffset = viewerPxWidth / 2;
@@ -87,6 +97,9 @@ function Measures({position}: MeasuresProps): React$MixedElement | null {
         const pxPerBeat = secPerBeat * VIEWER_PX_PER_SEC;
         const startBeat = startSec * beatsPerSec;
         const startPxPosition = startSec * VIEWER_PX_PER_SEC;
+        console.info({
+            startSec, beatsPerSec, secPerBeat, startBeat, startPxPosition
+        });
 
         const beatReactNodes = [];
         let currentBeat = startBeat;
@@ -107,18 +120,15 @@ function Measures({position}: MeasuresProps): React$MixedElement | null {
                 ...styles.beatNumber,
                 left: relPxPosition
             };
-            beatReactNodes.push(<div style={beatNumberStyle} key={`num-${currentBeat}`}></div>);
+            beatReactNodes.push(<div style={beatNumberStyle} key={`num-${currentBeat}`}>{currentBeat.toFixed(2)}</div>);
 
             currentBeat += 1;
         }
+        return beatReactNodes;
+    })();
 
-        ReactDOM.render(<>{beatReactNodes}</>, node);
-        return () => {
-            ReactDOM.unmountComponentAtNode(node);
-        }
-    }, [containerRef, position.bpm, position.preciseTimeSeconds]);
     return (
-        <div ref={containerRef} style={styles.measuresContainer}></div>
+        <div id={containerId} style={styles.measuresContainer}>{children}</div>
     );
 }
 

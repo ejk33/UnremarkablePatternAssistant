@@ -25,7 +25,8 @@ export class AudioPosition {
     }
 
     _getSecondsPerBeat(): number {
-        const secondsPerBeat = 60 * this.state.bpm;
+        const beatsPerSecond = this.state.bpm / 60;
+        const secondsPerBeat = 1 / beatsPerSecond;
         return secondsPerBeat;
     }
 
