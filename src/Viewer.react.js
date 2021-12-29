@@ -10,6 +10,12 @@ import type { AudioPositionPublicState } from "./AudioPosition";
 
 export const VIEWER_PX_PER_SEC = 250;
 
+// -------------- outer container ------------------
+// --pad-- --inner container--------      ---pad----
+//         -- waveform -------------
+//         -- measures -------------
+//         -- cursor ---------------
+
 type Props = {
     beatMap: BeatMap
 }
@@ -44,6 +50,21 @@ const styles = {
     beatNumber: {
         position: 'absolute',
         top: 0
+    },
+    outerPaddingContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        width: '200vw'
+    },
+    halfPad: {
+        width: '50vw',
+        flexGrow: 0,
+        flexShrink: 0
+    },
+    waveform: {
+        width: '100vw',
+        flexGrow: 0,
+        flexShrink: 0
     }
 }
 
@@ -156,7 +177,13 @@ function Waveform({beatMap, onLoaded}: WaveformProps): React$MixedElement | null
         });
     }, [beatMap, onLoaded]); 
 
-    return <div id="waveform"></div>;
+    return (
+        <div style={styles.outerPaddingContainer}>
+            <div style={styles.halfPad}></div>
+            <div style={styles.waveform} id="waveform"></div>
+            <div style={styles.halfPad}></div>
+        </div>
+    );
 }
 
 const WaveformMemo = React.memo(Waveform);
