@@ -3,68 +3,49 @@
 import type { BeatMap } from "./MapArchive";
 
 import React from 'react';
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as WaveSurfer from 'wavesurfer.js';
 import { AudioPosition } from "./AudioPosition";
 import type { AudioPositionPublicState } from "./AudioPosition";
 
 export const VIEWER_PX_PER_SEC = 250;
 
-// -------------- outer container ------------------
-// --pad-- --inner container--------      ---pad----
-//         -- waveform -------------
-//         -- measures -------------
-//         -- cursor ---------------
+// - visible container 100vw -
+// -------------- outer container 200vw ------------
+// -pad50- --inner container 100- -pad50-
+//         -- waveform100 -------
+//         -- measures100 -------
+//         -- cursor100 ---------
 
 type Props = {
     beatMap: BeatMap
 }
 
 const styles = {
-    waveviewer: {
-        width: '100%',
-        height: '200px'
+    visibleContainer: {
+        height: 600,
+        width: '100vw',
+        overflow: 'hidden'
     },
-    container: {
-        width: '100%',
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative'
-    },
-    measuresContainer: {
-        width: '100%',
-        height: '400px',
-        position: 'absolute',
+    outerContainer: {
+        height: 600,
+        width: '200vw',
         overflow: 'hidden',
-        top: 0,
-        left: 0
-    },
-    beatBar: {
-        height: '400px',
-        width: '1px',
-        backgroundColor: '#afafaf',
-        position: 'absolute',
-        top: 0
-    },
-    beatNumber: {
-        position: 'absolute',
-        top: 0
-    },
-    outerPaddingContainer: {
+        position: 'relative',
         display: 'flex',
-        flexDirection: 'row',
-        width: '200vw'
+        flexDirection: 'row'
     },
-    halfPad: {
+    pad: {
         width: '50vw',
         flexGrow: 0,
         flexShrink: 0
     },
-    waveform: {
+    innerContainer: {
         width: '100vw',
         flexGrow: 0,
-        flexShrink: 0
+        flexShrink: 0,
+        overflow: 'hidden',
+        position: 'relative'
     }
 }
 
@@ -87,126 +68,141 @@ function createWaveSurfer(domSelector: string, beatMap: BeatMap): any {
     return wavesurfer;
 }
 
-type MeasuresProps = {
-    position: AudioPositionPublicState
-}
-
 let idCounter = 0;
 
-function Measures({position}: MeasuresProps): React$MixedElement | null {
-    const containerNumber = useMemo(() => {
+function useUniqueId(): string {
+    const id = useMemo(() => {
         idCounter += 1;
-        return idCounter;
+        return `generatedId${idCounter}`;
     }, []);
-    const containerId = `autoid${containerNumber}`;
-
-    const [node, setNode] = useState(null);
-    useEffect(() => {
-        setNode(document.getElementById(containerId));
-    }, [containerId]);
-
-    const children = (() => {
-        if (node == null) {
-            return null;
-        }
-        const viewerPxWidth = node.offsetWidth;
-        const viewerSecWidth = viewerPxWidth / VIEWER_PX_PER_SEC;
-        const halfPxOffset = viewerPxWidth / 2;
-        const halfSecOffset = halfPxOffset / VIEWER_PX_PER_SEC;
-        let startSec = position.preciseTimeSeconds - halfSecOffset;
-        if ((startSec + viewerSecWidth) > position.length) {
-            startSec = position.length - viewerSecWidth;
-        }
-        if (startSec < 0) {
-            startSec = 0;
-        }
-        const beatsPerSec = position.bpm / 60;
-        const secPerBeat = 1 / beatsPerSec;
-        const pxPerBeat = secPerBeat * VIEWER_PX_PER_SEC;
-        const startBeat = startSec * beatsPerSec;
-        const startPxPosition = startSec * VIEWER_PX_PER_SEC;
-
-        const beatReactNodes = [];
-        let currentBeat = startBeat;
-        while (true) {
-            const absPxPosition = pxPerBeat * currentBeat;
-            let relPxPosition = absPxPosition - startPxPosition;
-            if (relPxPosition > viewerPxWidth) {
-                break;
-            }
-
-            const beatStyle = {
-                ...styles.beatBar,
-                left: relPxPosition
-            };
-            beatReactNodes.push(<div style={beatStyle} key={currentBeat}></div>);
-
-            const beatNumberStyle= {
-                ...styles.beatNumber,
-                left: relPxPosition
-            };
-            beatReactNodes.push(<div style={beatNumberStyle} key={`num-${currentBeat}`}>{currentBeat.toFixed(2)}</div>);
-
-            currentBeat += 1;
-        }
-        return beatReactNodes;
-    })();
-
-    return (
-        <div id={containerId} style={styles.measuresContainer}>{children}</div>
-    );
+    return id;
 }
 
-type WaveformProps = {
+function secToPx(sec: number) {
+    return VIEWER_PX_PER_SEC * sec;
+}
+
+type ScrollData = {
+    visibleContainerScroll: number,
+    innerScroll: number
+};
+
+function getScrollData(positionSeconds: number, viewportWidth: number, audioDuration: number): ScrollData {
+    const positionPx = secToPx(positionSeconds);
+    const durationPx = secToPx(audioDuration);
+    const halfWidthPx = viewportWidth / 2;
+
+    // left
+    if (positionPx < halfWidthPx) {
+        // ------------------ viewport -----------------------
+        // ------------pad ------ --------audio --------------
+
+        // ------------------ viewport -----------------------
+        // --- pad --- ----------------audio------------------
+
+        return {
+            visibleContainerScroll: positionPx,
+            innerScroll: 0
+        }
+    }
+
+    // right
+    else if (positionPx > (durationPx - halfWidthPx)) {
+        // ------------------ viewport -----------------------
+        // ----audio-------------- -----pad-------------------
+        // visibleContainer is scrolled to: viewportWidth
+
+        // ------------------ viewport -----------------------
+        // ------------------------------audio---- -pad-------
+        // visibleContainer is scrolled to: viewportWidth - remaining audio
+
+        return {
+            visibleContainerScroll: viewportWidth - (durationPx - positionPx),
+            innerScroll: durationPx - viewportWidth
+        };
+    }
+
+    // middle
+    else {
+        return {
+            visibleContainerScroll: halfWidthPx,
+            innerScroll: positionPx
+        }
+    }
+}
+
+function Waveform({beatMap, scrollData, onReady}: {
     beatMap: BeatMap,
-    onLoaded: (length: number) => void
-}
+    scrollData: ?ScrollData,
+    onReady: (duration: number) => void
+}) {
+    const waveformId = useUniqueId();
 
-function Waveform({beatMap, onLoaded}: WaveformProps): React$MixedElement | null {
-    /* eslint-disable */
-    const [mainPlayer, setMainPlayer] = useState<any>(null);
-    /* eslint-enable */
+    const [state] = useState<{waveSurfer: any}>({
+        waveSurfer: null
+    });
 
     useEffect(() => {
-        setMainPlayer(() => {
-            const surfer = createWaveSurfer('#waveform', beatMap);
-            surfer.on('ready', () => {
-                onLoaded(surfer.getDuration());
-            });
-            return surfer;
+        const element = document.getElementById(waveformId);
+        if (element == null) {
+            return;
+        }
+        const surfer = createWaveSurfer('#' + waveformId, beatMap);
+        state.waveSurfer = surfer;
+        surfer.on('ready', () => {
+            onReady(surfer.getDuration());
         });
-    }, [beatMap, onLoaded]); 
+    }, [waveformId, beatMap, onReady, state]);
 
-    return (
-        <div style={styles.outerPaddingContainer}>
-            <div style={styles.halfPad}></div>
-            <div style={styles.waveform} id="waveform"></div>
-            <div style={styles.halfPad}></div>
-        </div>
-    );
+    useEffect(() => {
+        const element = document.getElementById(waveformId);
+        if (element == null || scrollData == null) {
+            return;
+        }
+
+        const waveElement = element.firstChild;
+        if (waveElement == null) {
+            return;
+        }
+
+        if (waveElement instanceof HTMLElement) {
+            waveElement.scrollTo(scrollData.innerScroll, 0);
+        }
+    }, [scrollData, waveformId]);
+
+    return <div id={waveformId}></div>;
 }
-
-const WaveformMemo = React.memo(Waveform);
 
 export function Viewer({beatMap}: Props): React$MixedElement | null {
     const audioPosition = useMemo(() => {
         return new AudioPosition(beatMap.bpm, 1);
     }, [beatMap.bpm]);
 
+    const visibleContainerId = useUniqueId();
+
     const [audioPositionState, setAudioPositionState] = useState<AudioPositionPublicState>(audioPosition.getStateCopy());
+
+    const [audioDuration, setAudioDuration] = useState<?number>(null);
+    useEffect(() => {
+        if (audioDuration != null) {
+            audioPosition.setLength(audioDuration);
+        }
+    }, [audioDuration, audioPosition]);
+
+    const [viewportWidth, setViewportWidth] = useState<number>(0);
 
     useEffect(() => {
         setAudioPositionState(audioPosition.getStateCopy());
     }, [audioPosition]);
 
     useEffect(() => {
-        const container = document.getElementById('viewer-container');
-        if (container == null) {
+        const visibleContainer = document.getElementById(visibleContainerId);
+        if (visibleContainer == null) {
             return;
         }
-
+        setViewportWidth(visibleContainer.offsetWidth);
         // $FlowFixMe
-        container.addEventListener('mousewheel', (event) => {
+        visibleContainer.addEventListener('mousewheel', (event) => {
             if (event.deltaY > 0) {
                 audioPosition.backward();
             }
@@ -215,26 +211,30 @@ export function Viewer({beatMap}: Props): React$MixedElement | null {
             }
             const audioPositionState = audioPosition.getStateCopy();
             setAudioPositionState(audioPositionState);
-
-            const waveformDiv = document.getElementById('waveform');
-            const waveformElement = waveformDiv?.children[0];
-            if (waveformElement != null) {
-                const px = audioPositionState.preciseTimeSeconds * VIEWER_PX_PER_SEC;
-                const viewerPxWidth = container.offsetWidth;
-                const scrollX = px - (viewerPxWidth / 2);
-                waveformElement.scrollTo(scrollX, 0);
-            }
         }, false);
-    }, [audioPosition]);
+    }, [visibleContainerId, audioPosition]);
 
-    const onSongLoaded = useCallback((length: number) => {
-        audioPosition.setLength(length);
-    }, [audioPosition]);
+    const [scrollData, setScrollData] = useState(null)
+
+    useEffect(() => {
+        const scrollData = getScrollData(audioPositionState.preciseTimeSeconds, viewportWidth, audioPositionState.length);
+        setScrollData(scrollData);
+        const visibleContainer = document.getElementById(visibleContainerId);
+        if (visibleContainer == null) {
+            return;
+        }
+        visibleContainer.scrollTo(scrollData.visibleContainerScroll, 0);
+    }, [audioPositionState, viewportWidth, visibleContainerId]);
 
     return (
-        <div style={styles.container} id="viewer-container">
-            <Measures position={audioPositionState} />
-            <WaveformMemo beatMap={beatMap} onLoaded={onSongLoaded} />
+        <div id={visibleContainerId} style={styles.visibleContainer}>
+            <div style={styles.outerContainer}>
+                <div style={styles.pad}></div>
+                <div style={styles.innerContainer}>
+                    <Waveform beatMap={beatMap} scrollData={scrollData} onReady={setAudioDuration} />
+                </div>
+                <div style={styles.pad}></div>
+            </div>
         </div>
     );
 }
